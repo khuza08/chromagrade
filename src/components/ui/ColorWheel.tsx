@@ -98,7 +98,7 @@ const ColorWheel: React.FC<ColorWheelProps> = ({ label, value, onChange, onReset
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onDoubleClick={onReset}
-        className="w-36 h-36 rounded-full border border-[var(--border)] bg-[conic-gradient(from_0deg,red,magenta,blue,cyan,lime,yellow,red)] bg-opacity-10 relative group cursor-crosshair shadow-inner"
+        className="w-36 h-36 rounded-full border border-[var(--border)] bg-[conic-gradient(from_0deg,yellow,orange,red,magenta,blue,cyan,lime,yellow)] bg-opacity-10 relative group cursor-crosshair shadow-inner"
         style={{ touchAction: 'none' }}
       >
         {/* Soft overlay to desaturate the background gradient */}
