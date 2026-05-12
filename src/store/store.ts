@@ -3,6 +3,7 @@ import gradingReducer from './slices/gradingSlice';
 import historyReducer from './slices/historySlice';
 import imageReducer from './slices/imageSlice';
 import uiReducer from './slices/uiSlice';
+import exportReducer from './slices/exportSlice';
 import { historyMiddleware } from './middleware/historyMiddleware';
 
 export const store = configureStore({
@@ -11,6 +12,7 @@ export const store = configureStore({
     history: historyReducer,
     image: imageReducer,
     ui: uiReducer,
+    export: exportReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(historyMiddleware),

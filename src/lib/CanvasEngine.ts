@@ -275,6 +275,26 @@ export class CanvasEngine {
 
     return canvas;
   }
+
+  public exportToBlob(params: GradingState, format: 'jpg' | 'png' | 'gif'): Promise<Blob> {
+    return new Promise((resolve, reject) => {
+      try {
+        const canvas = this.exportHighRes(params);
+        const mimeType = format === 'jpg' ? 'image/jpeg' : `image/${format}`;
+        const quality = format === 'jpg' ? 0.92 : undefined;
+        
+        canvas.toBlob((blob) => {
+          if (blob) {
+            resolve(blob);
+          } else {
+            reject(new Error('Failed to create blob'));
+          }
+        }, mimeType, quality);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
 }
 
 export const canvasEngine = new CanvasEngine();
