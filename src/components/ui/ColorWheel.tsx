@@ -13,17 +13,18 @@ interface ColorWheelProps {
   onReset?: () => void;
 }
 
-// The ring sits at inset-[-6px] from the wheel div, so its radius
-// in px = (wheelDivWidth / 2) + 6. We store this as a named constant
-// so hit-detection and rendering always agree.
 const RING_INSET_PX = 6;
+
+// Feathered radial mask applied only to gradient/overlay layers — NOT the parent —
+// so child elements (thumb, puck, SVG ring) are never clipped by it.
+const CIRCLE_MASK = 'radial-gradient(circle, black 46%, transparent 50%)';
 
 const ColorWheel: React.FC<ColorWheelProps> = ({ label, value, onChange, onReset }) => {
   const wheelRef = useRef<HTMLDivElement>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [activeControl, setActiveControl] = useState<'puck' | 'ring' | 'thumb' | null>(null);
 
-  const SNAP_LIMIT = 0.04; // 4% Magnetic zone
+  const SNAP_LIMIT = 0.04;
 
   const handlePointerDown = (e: React.PointerEvent) => {
     const rect = wheelRef.current?.getBoundingClientRect();
@@ -35,9 +36,8 @@ const ColorWheel: React.FC<ColorWheelProps> = ({ label, value, onChange, onReset
     const y = e.clientY - rect.top - centerY;
     const distance = Math.sqrt(x * x + y * y);
     const innerRadius = rect.width / 2;
-    const ringRadius = innerRadius + RING_INSET_PX; // true ring radius in px
+    const ringRadius = innerRadius + RING_INSET_PX;
 
-    // Thumb hit detection — must use ringRadius to match where the thumb is rendered
     const lumaAngle = (value.luma - 1.0) * Math.PI;
     const tx = Math.sin(lumaAngle) * ringRadius;
     const ty = -Math.cos(lumaAngle) * ringRadius;
@@ -46,7 +46,6 @@ const ColorWheel: React.FC<ColorWheelProps> = ({ label, value, onChange, onReset
     if (thumbDist < 15) {
       setActiveControl('thumb');
     } else if (distance > innerRadius - 15 && distance < ringRadius + 15) {
-      // Ring zone: from 15px inside the wheel edge to 15px outside the ring
       setActiveControl('ring');
     } else {
       setActiveControl('puck');
@@ -72,13 +71,10 @@ const ColorWheel: React.FC<ColorWheelProps> = ({ label, value, onChange, onReset
       let newX = value.x + dx;
       let newY = value.y + dy;
       const magnitude = Math.sqrt(newX * newX + newY * newY);
-
       if (magnitude < SNAP_LIMIT) {
-        newX = 0;
-        newY = 0;
+        newX = 0; newY = 0;
       } else if (magnitude > 1.0) {
-        newX /= magnitude;
-        newY /= magnitude;
+        newX /= magnitude; newY /= magnitude;
       }
       onChange({ x: newX, y: newY });
     } else if (activeControl === 'ring') {
@@ -87,8 +83,8 @@ const ColorWheel: React.FC<ColorWheelProps> = ({ label, value, onChange, onReset
     } else if (activeControl === 'thumb') {
       const x = e.clientX - rect.left - centerX;
       const y = e.clientY - rect.top - centerY;
-      const angle = Math.atan2(x, -y); // angle from top, clockwise
-      const newLuma = 1.0 + angle / Math.PI; // maps [-PI,PI] → [0, 2]
+      const angle = Math.atan2(x, -y);
+      const newLuma = 1.0 + angle / Math.PI;
       onChange({ luma: Math.max(0, Math.min(2, newLuma)) });
     }
   };
@@ -101,31 +97,16 @@ const ColorWheel: React.FC<ColorWheelProps> = ({ label, value, onChange, onReset
 
   const isSnapped = Math.sqrt(value.x * value.x + value.y * value.y) < 0.001;
 
-  // Thumb angular position on the ring.
-  // luma=1.0 → top (angle=0), luma=0 → bottom-left (angle=-PI), luma=2 → bottom-right (angle=+PI)
-  const lumaAngle = (value.luma - 1.0) * Math.PI; // range: -PI to +PI
-
-  // Thumb is on the ring which sits RING_INSET_PX outside the wheel div.
-  // Express as CSS calc so px offset and % offset compose correctly.
-  // sin/cos give unit-vector components; multiply by 50% for the inner radius,
-  // then add RING_INSET_PX for the ring protrusion.
+  const lumaAngle = (value.luma - 1.0) * Math.PI;
   const thumbSinA = Math.sin(lumaAngle);
   const thumbCosA = Math.cos(lumaAngle);
-  // left/top position of the thumb centre (half of 12px thumb = 6px offset)
   const thumbLeft = `calc(50% + ${thumbSinA * 50}% + ${thumbSinA * RING_INSET_PX}px)`;
   const thumbTop = `calc(50% + ${-thumbCosA * 50}% + ${-thumbCosA * RING_INSET_PX}px)`;
 
-  // SVG progress ring — use explicit viewBox + circumference maths instead of %-based dash.
-  // The SVG is sized to the wheel div plus the ring inset on all sides:
-  //   SVG side  = wheelDiv + 2 * RING_INSET_PX
-  // With the wheel div being w-36 = 144px:
-  //   SVG side  = 144 + 12 = 156px
-  //   SVG r     = 156/2 - strokeWidth/2 = 78 - 1.5 = 76.5px
-  // We use a viewBox of "0 0 156 156" and r=76.5 so it scales with the component.
-  const svgSize = 156; // matches w-36 (144px) + 2*6px
+  const svgSize = 156;
   const strokeWidth = 3;
-  const circleR = svgSize / 2 - strokeWidth / 2; // 76.5
-  const circumference = 2 * Math.PI * circleR;   // ≈ 480.66px
+  const circleR = svgSize / 2 - strokeWidth / 2;
+  const circumference = 2 * Math.PI * circleR;
   const dashOffset = circumference * (1 - value.luma / 2);
 
   return (
@@ -136,20 +117,36 @@ const ColorWheel: React.FC<ColorWheelProps> = ({ label, value, onChange, onReset
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onDoubleClick={onReset}
-        className="w-36 h-36 rounded-full border border-[var(--border)] bg-[conic-gradient(from_0deg,yellow,orange,red,magenta,blue,cyan,lime,yellow)] bg-opacity-10 relative group cursor-crosshair shadow-inner"
+        className="w-36 h-36 relative group cursor-crosshair"
         style={{ touchAction: 'none' }}
       >
-        {/* Soft overlay to desaturate the background gradient */}
-        <div className="absolute inset-0 rounded-full bg-[var(--bg-panel)] opacity-80 pointer-events-none" />
+        {/* Conic gradient — mask HERE only, children are unaffected */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background: 'conic-gradient(from 0deg, yellow, orange, red, magenta, blue, cyan, lime, yellow)',
+            WebkitMaskImage: CIRCLE_MASK,
+            maskImage: CIRCLE_MASK,
+          }}
+        />
 
-        {/* Persistent Luma Ring track */}
+        {/* Desaturating overlay — also masked to match gradient layer */}
+        <div
+          className="absolute inset-0 bg-[var(--bg-panel)] opacity-80 pointer-events-none"
+          style={{ WebkitMaskImage: CIRCLE_MASK, maskImage: CIRCLE_MASK }}
+        />
+
+        {/* Border ring — unmasked, sits cleanly on top of the gradient */}
+        <div className="absolute inset-0 rounded-full border border-[var(--border)] shadow-inner pointer-events-none" />
+
+        {/* Luma ring track */}
         <div className="absolute inset-[-6px] rounded-full border border-[var(--border)] opacity-30 pointer-events-none" />
 
-        {/* SVG progress arc — uses explicit viewBox + circumference so dash units are correct */}
+        {/* SVG progress arc */}
         <svg
           viewBox={`0 0 ${svgSize} ${svgSize}`}
           className="absolute inset-[-6px] w-[calc(100%+12px)] h-[calc(100%+12px)] pointer-events-none"
-          style={{ transform: 'rotate(90deg)' }} // rotate so 0% starts at top
+          style={{ transform: 'rotate(90deg)' }}
         >
           <circle
             cx={svgSize / 2}
@@ -165,7 +162,7 @@ const ColorWheel: React.FC<ColorWheelProps> = ({ label, value, onChange, onReset
           />
         </svg>
 
-        {/* Luma Thumb — positioned on the ring via calc() */}
+        {/* Luma Thumb */}
         <div
           className={`absolute w-3 h-3 rounded-full border-2 border-white shadow-md transition-transform duration-75 z-20
             ${(activeControl === 'ring' || activeControl === 'thumb') ? 'bg-[var(--accent-blue)] scale-125' : 'bg-[var(--bg-control)]'}`}
