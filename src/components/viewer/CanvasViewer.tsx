@@ -12,15 +12,10 @@ const CanvasViewer: React.FC = () => {
   const gradingParams = useSelector((state: RootState) => state.grading);
   const [isDragging, setIsDragging] = useState(false);
 
-  useEffect(() => {
-    if (canvasRef.current) {
-      canvasEngine.setTarget(canvasRef.current);
-    }
-  }, []);
-
   // Redraw when grading params change
   useEffect(() => {
-    if (originalUrl) {
+    if (originalUrl && canvasRef.current) {
+      canvasEngine.setTarget(canvasRef.current);
       canvasEngine.render(gradingParams);
     }
   }, [gradingParams, originalUrl]);
