@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../store/store';
 import { setImage } from '../../store/slices/imageSlice';
 import { canvasEngine } from '../../lib/CanvasEngine';
-import { Upload, Maximize, ZoomIn, ZoomOut } from 'lucide-react';
+import { Upload, Maximize, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 
 const CanvasViewer: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -83,7 +83,7 @@ const CanvasViewer: React.FC = () => {
     return Math.min(
       (containerW - 40) / canvasW,
       (containerH - 40) / canvasH,
-      1.0 
+      1.0
     );
   };
 
@@ -200,29 +200,36 @@ const CanvasViewer: React.FC = () => {
       {originalUrl && (
         <>
           <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-            <div className="flex items-center gap-2 px-3 py-1 bg-[var(--bg-panel)]/80 backdrop-blur-md rounded-lg border border-[var(--border)] mr-2">
-              <span className="text-[10px] font-mono text-[var(--accent-blue)]">{Math.round(zoom * 100)}%</span>
+            <div className="flex items-center gap-2 px-2 py-1 bg-[var(--bg-panel)]/20 backdrop-blur-md rounded-lg border border-[var(--border)] mr-2 group/zoom">
+              <span className="text-[10px] font-mono text-[var(--accent-blue)] min-w-[32px] text-center">{Math.round(zoom * 100)}%</span>
+              <button 
+                onClick={resetZoom}
+                className="hover:text-[var(--accent-blue)] text-[var(--text-secondary)] transition-colors cursor-pointer"
+                title="Reset zoom"
+              >
+                <RotateCcw size={10} />
+              </button>
             </div>
             <button 
               onClick={() => handleZoom(0.2)}
-              className="p-2 bg-[var(--bg-panel)]/80 hover:bg-[var(--bg-panel)] rounded-lg backdrop-blur-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all border border-[var(--border)]"
+              className="p-2 bg-[var(--bg-panel)]/20 hover:bg-[var(--bg-panel)]/20 rounded-lg backdrop-blur-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all border border-[var(--border)]"
             >
               <ZoomIn size={18} />
             </button>
             <button 
               onClick={() => handleZoom(-0.2)}
-              className="p-2 bg-[var(--bg-panel)]/80 hover:bg-[var(--bg-panel)] rounded-lg backdrop-blur-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all border border-[var(--border)]"
+              className="p-2 bg-[var(--bg-panel)]/20 hover:bg-[var(--bg-panel)]/20 rounded-lg backdrop-blur-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all border border-[var(--border)]"
             >
               <ZoomOut size={18} />
             </button>
             <button 
               onClick={toggleFullscreen}
-              className={`p-2 bg-[var(--bg-panel)]/80 hover:bg-[var(--bg-panel)] rounded-lg backdrop-blur-md transition-all border border-[var(--border)] ${isFullscreen ? 'text-[var(--accent-blue)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
+              className={`p-2 bg-[var(--bg-panel)]/20 hover:bg-[var(--bg-panel)]/20 rounded-lg backdrop-blur-md transition-all border border-[var(--border)] ${isFullscreen ? 'text-[var(--accent-blue)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
             >
               <Maximize size={18} />
             </button>
           </div>
-          <div className="absolute bottom-4 left-4 px-3 py-1.5 bg-[var(--bg-panel)]/80 backdrop-blur-md rounded-md text-[10px] font-mono text-[var(--text-tertiary)] tracking-wider uppercase border border-[var(--border)] z-20">
+          <div className="absolute bottom-4 left-4 px-3 py-1.5 bg-[var(--bg-panel)]/20 backdrop-blur-md rounded-md text-[10px] font-mono text-[var(--text-tertiary)] tracking-wider uppercase border border-[var(--border)] z-20">
             4K RAW • 16-BIT • sRGB
           </div>
         </>
