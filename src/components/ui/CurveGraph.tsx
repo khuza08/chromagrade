@@ -194,6 +194,7 @@ const CurveGraph: React.FC<CurveGraphProps> = ({ channel, points, isPickerActive
       <svg
         ref={svgRef}
         viewBox="0 0 256 256"
+        preserveAspectRatio="none"
         className="absolute inset-0 w-full h-full cursor-crosshair select-none"
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
