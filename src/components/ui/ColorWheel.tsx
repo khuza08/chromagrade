@@ -13,7 +13,7 @@ interface ColorWheelProps {
   onReset?: () => void;
 }
 
-const RING_INSET_PX = 6;
+const RING_INSET_PX = -4;
 
 // Feathered radial mask applied only to gradient/overlay layers — NOT the parent —
 // so child elements (thumb, puck, SVG ring) are never clipped by it.
@@ -101,7 +101,7 @@ const ColorWheel: React.FC<ColorWheelProps> = ({ label, value, onChange, onReset
   const thumbSinA = Math.sin(lumaAngle);
   const thumbCosA = Math.cos(lumaAngle);
   const thumbLeft = `calc(50% + ${thumbSinA * 50}% + ${thumbSinA * RING_INSET_PX}px)`;
-  const thumbTop = `calc(50% + ${-thumbCosA * 50}% + ${-thumbCosA * RING_INSET_PX}px)`;
+  const thumbTop  = `calc(50% + ${-thumbCosA * 50}% + ${-thumbCosA * RING_INSET_PX}px)`;
 
   const svgSize = 156;
   const strokeWidth = 3;
@@ -120,9 +120,9 @@ const ColorWheel: React.FC<ColorWheelProps> = ({ label, value, onChange, onReset
         className="w-36 h-36 relative group cursor-crosshair"
         style={{ touchAction: 'none' }}
       >
-        {/* Conic gradient — mask HERE only, children are unaffected */}
+        {/* Conic gradient — expanded to inset-[-6px] so it fills flush to the ring edge */}
         <div
-          className="absolute inset-0"
+          className="absolute inset-[-18px]"
           style={{
             background: 'conic-gradient(from 0deg, yellow, orange, red, magenta, blue, cyan, lime, yellow)',
             WebkitMaskImage: CIRCLE_MASK,
@@ -130,23 +130,22 @@ const ColorWheel: React.FC<ColorWheelProps> = ({ label, value, onChange, onReset
           }}
         />
 
-        {/* Desaturating overlay — also masked to match gradient layer */}
+        {/* Desaturating overlay — same bounds as gradient */}
         <div
-          className="absolute inset-0 bg-[var(--bg-panel)] opacity-80 pointer-events-none"
+          className="absolute inset-[-18px] bg-[var(--bg-panel)] opacity-80 pointer-events-none"
           style={{ WebkitMaskImage: CIRCLE_MASK, maskImage: CIRCLE_MASK }}
         />
 
-        {/* Border ring — unmasked, sits cleanly on top of the gradient */}
-        <div className="absolute inset-0 rounded-full border border-[var(--border)] shadow-inner pointer-events-none" />
+        {/* Border ring — sits on top at the gradient edge */}
+        <div className="absolute inset-2 rounded-full border border-[var(--border)] shadow-inner pointer-events-none" />
 
         {/* Luma ring track */}
-        <div className="absolute inset-[-6px] rounded-full border border-[var(--border)] opacity-30 pointer-events-none" />
+        <div className="absolute inset-2 rounded-full border border-[var(--border)] opacity-30 pointer-events-none" />
 
         {/* SVG progress arc */}
         <svg
           viewBox={`0 0 ${svgSize} ${svgSize}`}
-          className="absolute inset-[-6px] w-[calc(100%+12px)] h-[calc(100%+12px)] pointer-events-none"
-          style={{ transform: 'rotate(90deg)' }}
+          className="absolute inset-[2px] w-[calc(100%-4px)] h-[calc(100%-4px)] pointer-events-none"          style={{ transform: 'rotate(90deg)' }}
         >
           <circle
             cx={svgSize / 2}
@@ -175,7 +174,7 @@ const ColorWheel: React.FC<ColorWheelProps> = ({ label, value, onChange, onReset
         />
 
         {/* Center Crosshair */}
-        <div className="absolute inset-0 flex items-center justify-center opacity-20 pointer-events-none">
+        <div className="absolute inset-2 flex items-center justify-center opacity-20 pointer-events-none">
           <div className="w-[1px] h-full bg-[var(--text-tertiary)]" />
           <div className="h-[1px] w-full bg-[var(--text-tertiary)] absolute" />
         </div>
