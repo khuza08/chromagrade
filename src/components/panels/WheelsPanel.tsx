@@ -40,30 +40,34 @@ const WheelsPanel: React.FC = () => {
       </div>
 
       {/* Sliders Grid */}
-      <div className="h-24 grid grid-cols-4 gap-x-12 gap-y-4 px-8 border-t border-[var(--border)]/30 pt-6">
+      <div className="h-24 grid grid-cols-4 gap-x-12 gap-y-4 px-8 border-t border-[var(--border)]/30 pt-2">
         <PerformanceSlider 
           label="Contrast" 
           min={-100} max={100} 
           value={grading.contrast} 
           onChange={(v) => dispatch(setContrast(v))} 
+          onReset={() => dispatch(setContrast(0))}
         />
         <PerformanceSlider 
           label="Saturation" 
           min={-100} max={100} 
           value={grading.saturation} 
           onChange={(v) => dispatch(setSaturation(v))} 
+          onReset={() => dispatch(setSaturation(0))}
         />
         <PerformanceSlider 
           label="Temperature" 
           min={-100} max={100} 
           value={grading.temperature} 
           onChange={(v) => dispatch(setTemperature(v))} 
+          onReset={() => dispatch(setTemperature(0))}
         />
         <PerformanceSlider 
           label="Tint" 
           min={-100} max={100} 
           value={grading.tint} 
           onChange={(v) => dispatch(setTint(v))} 
+          onReset={() => dispatch(setTint(0))}
         />
       </div>
     </div>
