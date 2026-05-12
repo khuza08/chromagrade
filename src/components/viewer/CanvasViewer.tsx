@@ -11,7 +11,11 @@ const CanvasViewer: React.FC = () => {
   const dispatch = useDispatch();
   const { originalUrl } = useSelector((state: RootState) => state.image);
   const gradingParams = useSelector((state: RootState) => state.grading);
+  const [zoom, setZoom] = useState(1.0);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const dragStart = useRef({ x: 0, y: 0 });
   const isGLInitialized = useRef(false);
 
   // Initialize WebGL ONCE on component mount — canvas is always in the DOM
@@ -20,9 +24,26 @@ const CanvasViewer: React.FC = () => {
       canvasEngine.init(canvasRef.current);
       isGLInitialized.current = true;
     }
-  }, []); // Empty deps: runs exactly once after first render
+  }, []);
 
-  // Redraw when grading params change (only if an image is loaded)
+  // Sync Fullscreen State
+  useEffect(() => {
+    const handleFsChange = () => {
+      const isFs = !!document.fullscreenElement;
+      setIsFullscreen(isFs);
+      // Immediately trigger engine resize for resolution awareness
+      if (containerRef.current) {
+        canvasEngine.resize(
+          containerRef.current.clientWidth,
+          containerRef.current.clientHeight
+        );
+      }
+    };
+    document.addEventListener('fullscreenchange', handleFsChange);
+    return () => document.removeEventListener('fullscreenchange', handleFsChange);
+  }, []);
+
+  // Redraw when grading params change
   useEffect(() => {
     if (originalUrl) {
       canvasEngine.render(gradingParams);
@@ -42,22 +63,80 @@ const CanvasViewer: React.FC = () => {
     return () => observer.disconnect();
   }, []);
 
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      containerRef.current?.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+  };
+
+  const calculateFitZoom = () => {
+    if (!containerRef.current || !canvasRef.current) return 1.0;
+    const containerW = containerRef.current.clientWidth;
+    const containerH = containerRef.current.clientHeight;
+    const canvasW = canvasRef.current.width;
+    const canvasH = canvasRef.current.height;
+
+    if (canvasW === 0 || canvasH === 0) return 1.0;
+
+    return Math.min(
+      (containerW - 40) / canvasW,
+      (containerH - 40) / canvasH,
+      1.0 
+    );
+  };
+
+  const handleZoom = (delta: number) => {
+    setZoom(prev => Math.max(0.05, Math.min(10.0, prev + delta)));
+  };
+
+  const resetZoom = () => {
+    const fit = calculateFitZoom();
+    setZoom(fit);
+    setPan({ x: 0, y: 0 });
+  };
+
+  const handlePointerDown = (e: React.PointerEvent) => {
+    // Allow panning if zoomed in OR if the image is larger than container
+    setIsDragging(true);
+    dragStart.current = { x: e.clientX - pan.x, y: e.clientY - pan.y };
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+  };
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isDragging) return;
+    setPan({
+      x: e.clientX - dragStart.current.x,
+      y: e.clientY - dragStart.current.y
+    });
+  };
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    setIsDragging(false);
+    (e.target as HTMLElement).releasePointerCapture(e.pointerId);
+  };
+
   const handleFileUpload = async (file: File) => {
     if (!file.type.startsWith('image/')) return;
-
     const url = URL.createObjectURL(file);
-    // loadImage now has a valid GL context because init() ran on mount
     const dimensions = await canvasEngine.loadImage(url);
-
+    
     dispatch(setImage({
       url,
       width: dimensions.width,
       height: dimensions.height,
       name: file.name,
     }));
-
-    // Render immediately after texture is uploaded
+    
     canvasEngine.render(gradingParams);
+    
+    // Defer zoom calculation slightly to ensure DOM has updated canvas dimensions
+    setTimeout(() => {
+      const fit = calculateFitZoom();
+      setZoom(fit);
+      setPan({ x: 0, y: 0 });
+    }, 50);
   };
 
   const onDrop = (e: React.DragEvent) => {
@@ -68,12 +147,14 @@ const CanvasViewer: React.FC = () => {
   };
 
   return (
-    // Always render the container and canvas — they never unmount
     <div
       ref={containerRef}
-      className="w-full h-full relative group bg-[var(--bg-base)] overflow-hidden flex items-center justify-center"
+      className={`w-full h-full relative group bg-[var(--bg-base)] overflow-hidden flex items-center justify-center transition-colors duration-500 ${isFullscreen ? 'bg-black' : ''}`}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
     >
-      {/* Drop zone overlay — shown when no image is loaded */}
+      {/* Drop zone overlay */}
       {!originalUrl && (
         <div
           onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
@@ -102,28 +183,46 @@ const CanvasViewer: React.FC = () => {
         </div>
       )}
 
-      {/* WebGL Canvas — always mounted so init() always has a valid ref */}
+      {/* WebGL Canvas */}
       <canvas
         ref={canvasRef}
-        className="max-w-full max-h-full object-contain shadow-2xl shadow-black/50"
-        style={{ imageRendering: 'auto', display: originalUrl ? 'block' : 'none' }}
+        className="object-contain shadow-2xl shadow-black/50 cursor-grab active:cursor-grabbing"
+        style={{ 
+          display: originalUrl ? 'block' : 'none',
+          transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+          transition: isDragging ? 'none' : 'transform 0.2s cubic-bezier(0.2, 0, 0, 1)',
+          imageRendering: zoom > 1.0 ? 'pixelated' : 'auto',
+        }}
+        onDoubleClick={resetZoom}
       />
 
-      {/* Viewer HUD — only visible when image is loaded */}
+      {/* Viewer HUD */}
       {originalUrl && (
         <>
-          <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button className="p-2 bg-[var(--bg-panel)]/80 hover:bg-[var(--bg-panel)] rounded-lg backdrop-blur-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all border border-[var(--border)]">
+          <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+            <div className="flex items-center gap-2 px-3 py-1 bg-[var(--bg-panel)]/80 backdrop-blur-md rounded-lg border border-[var(--border)] mr-2">
+              <span className="text-[10px] font-mono text-[var(--accent-blue)]">{Math.round(zoom * 100)}%</span>
+            </div>
+            <button 
+              onClick={() => handleZoom(0.2)}
+              className="p-2 bg-[var(--bg-panel)]/80 hover:bg-[var(--bg-panel)] rounded-lg backdrop-blur-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all border border-[var(--border)]"
+            >
               <ZoomIn size={18} />
             </button>
-            <button className="p-2 bg-[var(--bg-panel)]/80 hover:bg-[var(--bg-panel)] rounded-lg backdrop-blur-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all border border-[var(--border)]">
+            <button 
+              onClick={() => handleZoom(-0.2)}
+              className="p-2 bg-[var(--bg-panel)]/80 hover:bg-[var(--bg-panel)] rounded-lg backdrop-blur-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all border border-[var(--border)]"
+            >
               <ZoomOut size={18} />
             </button>
-            <button className="p-2 bg-[var(--bg-panel)]/80 hover:bg-[var(--bg-panel)] rounded-lg backdrop-blur-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all border border-[var(--border)]">
+            <button 
+              onClick={toggleFullscreen}
+              className={`p-2 bg-[var(--bg-panel)]/80 hover:bg-[var(--bg-panel)] rounded-lg backdrop-blur-md transition-all border border-[var(--border)] ${isFullscreen ? 'text-[var(--accent-blue)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
+            >
               <Maximize size={18} />
             </button>
           </div>
-          <div className="absolute bottom-4 left-4 px-3 py-1.5 bg-[var(--bg-panel)]/80 backdrop-blur-md rounded-md text-[10px] font-mono text-[var(--text-tertiary)] tracking-wider uppercase border border-[var(--border)]">
+          <div className="absolute bottom-4 left-4 px-3 py-1.5 bg-[var(--bg-panel)]/80 backdrop-blur-md rounded-md text-[10px] font-mono text-[var(--text-tertiary)] tracking-wider uppercase border border-[var(--border)] z-20">
             4K RAW • 16-BIT • sRGB
           </div>
         </>
