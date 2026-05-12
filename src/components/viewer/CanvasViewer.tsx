@@ -9,7 +9,7 @@ const CanvasViewer: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const dispatch = useDispatch();
-  const { originalUrl } = useSelector((state: RootState) => state.image);
+  const { originalUrl, dimensions, fileName } = useSelector((state: RootState) => state.image);
   const gradingParams = useSelector((state: RootState) => state.grading);
   const [zoom, setZoom] = useState(1.0);
   const [pan, setPan] = useState({ x: 0, y: 0 });
@@ -229,8 +229,21 @@ const CanvasViewer: React.FC = () => {
               <Maximize size={18} />
             </button>
           </div>
-          <div className="absolute bottom-4 left-4 px-3 py-1.5 bg-[var(--bg-panel)]/20 backdrop-blur-md rounded-md text-[10px] font-mono text-[var(--text-tertiary)] tracking-wider uppercase border border-[var(--border)] z-20">
-            4K RAW • 16-BIT • sRGB
+          <div className="absolute bottom-4 left-4 px-3 py-1.5 bg-[var(--bg-panel)]/20 backdrop-blur-md rounded-md text-[10px] font-mono text-[var(--text-tertiary)] tracking-wider uppercase border border-[var(--border)] z-20 flex gap-3">
+            <span>
+              {dimensions ? (
+                dimensions.width >= 3840 ? '4K' :
+                dimensions.width >= 2560 ? 'QHD' :
+                dimensions.width >= 1920 ? 'FHD' :
+                dimensions.width >= 1280 ? 'HD' : 'SD'
+              ) : '---'}
+              {' '}
+              {fileName?.split('.').pop() || 'IMG'}
+            </span>
+            <span className="opacity-30">•</span>
+            <span>{dimensions ? `${dimensions.width}x${dimensions.height}` : '0x0'}</span>
+            <span className="opacity-30">•</span>
+            <span>sRGB</span>
           </div>
         </>
       )}
