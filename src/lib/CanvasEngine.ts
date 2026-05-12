@@ -1,4 +1,4 @@
-import type { GradingState } from '../store/slices/gradingSlice';
+import type { GradingState, WheelValue } from '../store/slices/gradingSlice';
 import { vertexShaderSource } from './shaders/vertex.glsl';
 import { fragmentShaderSource } from './shaders/fragment.glsl';
 import { compileShader, createProgram } from './shaders/compileShader';
@@ -42,7 +42,7 @@ export class CanvasEngine {
     // Cache uniforms
     const uniforms = [
       'u_texture', 'u_resolution', 'u_contrast', 'u_saturation', 
-      'u_temperature', 'u_tint', 'u_lift', 'u_gamma', 'u_gain'
+      'u_temperature', 'u_tint', 'u_shadows', 'u_midtones', 'u_highlights', 'u_global'
     ];
     uniforms.forEach(name => {
       const location = gl.getUniformLocation(this.program!, name);
@@ -133,6 +133,16 @@ export class CanvasEngine {
     return texture;
   }
 
+  private cartesianToRGB(wheel: WheelValue, sensitivity: number = 1.0) {
+    const { x, y, luma } = wheel;
+    // Map Cartesian to RGB shifts (Industry Standard approximation)
+    // luma acts as a base multiplier/offset, while x/y shift color balance
+    const r = (luma - 1.0) + (x * sensitivity) - (y * sensitivity / 2);
+    const g = (luma - 1.0) - (x * sensitivity / 2) - (y * sensitivity / 2);
+    const b = (luma - 1.0) - (x * sensitivity / 2) + (y * sensitivity);
+    return { r, g, b };
+  }
+
   public render(params: GradingState) {
     if (!this.gl || !this.program || !this._proxyTexture) return;
 
@@ -158,38 +168,35 @@ export class CanvasEngine {
 
     // Set Uniforms
     gl.uniform2f(this._uniforms['u_resolution'], gl.canvas.width, gl.canvas.height);
-    
-    // Sliders: -100..100 -> 0..2 (Pivot 1.0)
     gl.uniform1f(this._uniforms['u_contrast'], (params.contrast + 100) / 100);
     gl.uniform1f(this._uniforms['u_saturation'], (params.saturation + 100) / 100);
-    
-    // Temp/Tint: -100..100 -> -0.2..0.2
     gl.uniform1f(this._uniforms['u_temperature'], params.temperature / 500);
     gl.uniform1f(this._uniforms['u_tint'], params.tint / 500);
 
-    // Wheels: -100..100 maps to specific shader ranges
-    // Lift: -0.5..0.5
-    gl.uniform3f(this._uniforms['u_lift'], 
-      params.primary.lift.r / 200, 
-      params.primary.lift.g / 200, 
-      params.primary.lift.b / 200
+    // Shadows (Lift)
+    const shadows = this.cartesianToRGB(params.primary.shadows, 0.2);
+    gl.uniform3f(this._uniforms['u_shadows'], shadows.r, shadows.g, shadows.b);
+
+    // Midtones (Gamma)
+    const mid = params.primary.midtones;
+    const midRGB = {
+      r: Math.pow(2, (mid.luma - 1.0) + mid.x - mid.y / 2),
+      g: Math.pow(2, (mid.luma - 1.0) - mid.x / 2 - mid.y / 2),
+      b: Math.pow(2, (mid.luma - 1.0) - mid.x / 2 + mid.y),
+    };
+    gl.uniform3f(this._uniforms['u_midtones'], midRGB.r, midRGB.g, midRGB.b);
+
+    // Highlights (Gain)
+    const high = params.primary.highlights;
+    gl.uniform3f(this._uniforms['u_highlights'], 
+      high.luma + high.x - high.y / 2,
+      high.luma - high.x / 2 - high.y / 2,
+      high.luma - high.x / 2 + high.y
     );
 
-    // Gamma: 0.1..5.0 (default 1.0)
-    const mapGamma = (v: number) => Math.pow(2, v / 50); // -100 -> 0.25, 0 -> 1, 100 -> 4
-    gl.uniform3f(this._uniforms['u_gamma'], 
-      mapGamma(params.primary.gamma.r),
-      mapGamma(params.primary.gamma.g),
-      mapGamma(params.primary.gamma.b)
-    );
-
-    // Gain: 0..5 (default 1.0)
-    const mapGain = (v: number) => (v + 100) / 100; // -100 -> 0, 0 -> 1, 100 -> 2
-    gl.uniform3f(this._uniforms['u_gain'], 
-      mapGain(params.primary.gain.r),
-      mapGain(params.primary.gain.g),
-      mapGain(params.primary.gain.b)
-    );
+    // Global (Offset)
+    const glob = this.cartesianToRGB(params.primary.global, 0.5);
+    gl.uniform3f(this._uniforms['u_global'], glob.r, glob.g, glob.b);
 
     // Bind Texture
     gl.activeTexture(gl.TEXTURE0);
@@ -213,16 +220,12 @@ export class CanvasEngine {
     canvas.width = this._originalImage.width;
     canvas.height = this._originalImage.height;
     
-    // We can reuse the engine logic or create a temporary one
-    // For simplicity, we'll create a temporary context
     const gl = canvas.getContext('webgl2', { preserveDrawingBuffer: true })!;
     
-    // Re-init for export context
     const vShader = compileShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
     const fShader = compileShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
     const prog = createProgram(gl, vShader, fShader);
     
-    // Set up geometry
     const pBuf = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, pBuf);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]), gl.STATIC_DRAW);
@@ -231,7 +234,6 @@ export class CanvasEngine {
     gl.bindBuffer(gl.ARRAY_BUFFER, tBuf);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0,0, 1,0, 0,1, 0,1, 1,0, 1,1]), gl.STATIC_DRAW);
     
-    // Upload original image
     const tex = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, tex);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this._originalImage);
@@ -240,11 +242,9 @@ export class CanvasEngine {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-    // Draw
     gl.useProgram(prog);
     gl.viewport(0, 0, canvas.width, canvas.height);
     
-    // Set Uniforms (Simplified for export helper)
     const setUni = (name: string, type: string, ...args: any[]) => {
       const loc = gl.getUniformLocation(prog, name);
       if (loc) (gl as any)[type](loc, ...args);
@@ -255,11 +255,26 @@ export class CanvasEngine {
     setUni('u_saturation', 'uniform1f', (params.saturation + 100) / 100);
     setUni('u_temperature', 'uniform1f', params.temperature / 500);
     setUni('u_tint', 'uniform1f', params.tint / 500);
-    setUni('u_lift', 'uniform3f', params.primary.lift.r/200, params.primary.lift.g/200, params.primary.lift.b/200);
-    const mapGamma = (v: number) => Math.pow(2, v / 50);
-    setUni('u_gamma', 'uniform3f', mapGamma(params.primary.gamma.r), mapGamma(params.primary.gamma.g), mapGamma(params.primary.gamma.b));
-    const mapGain = (v: number) => (v + 100) / 100;
-    setUni('u_gain', 'uniform3f', mapGain(params.primary.gain.r), mapGain(params.primary.gain.g), mapGain(params.primary.gain.b));
+
+    const s = this.cartesianToRGB(params.primary.shadows, 0.2);
+    setUni('u_shadows', 'uniform3f', s.r, s.g, s.b);
+
+    const mid = params.primary.midtones;
+    setUni('u_midtones', 'uniform3f', 
+      Math.pow(2, (mid.luma - 1.0) + mid.x - mid.y / 2),
+      Math.pow(2, (mid.luma - 1.0) - mid.x / 2 - mid.y / 2),
+      Math.pow(2, (mid.luma - 1.0) - mid.x / 2 + mid.y)
+    );
+
+    const h = params.primary.highlights;
+    setUni('u_highlights', 'uniform3f', 
+      h.luma + h.x - h.y / 2,
+      h.luma - h.x / 2 - h.y / 2,
+      h.luma - h.x / 2 + h.y
+    );
+
+    const g = this.cartesianToRGB(params.primary.global, 0.5);
+    setUni('u_global', 'uniform3f', g.r, g.g, g.b);
 
     const pLoc = gl.getAttribLocation(prog, 'a_position');
     gl.enableVertexAttribArray(pLoc);

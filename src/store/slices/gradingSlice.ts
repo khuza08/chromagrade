@@ -1,11 +1,17 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 
+export interface WheelValue {
+  x: number;      // -1.0 to 1.0 (Color balance X)
+  y: number;      // -1.0 to 1.0 (Color balance Y)
+  luma: number;   // 0.0 to 2.0 (Neutral at 1.0)
+}
+
 export interface PrimaryWheels {
-  lift: { r: number; g: number; b: number; y: number };
-  gamma: { r: number; g: number; b: number; y: number };
-  gain: { r: number; g: number; b: number; y: number };
-  offset: { r: number; g: number; b: number; y: number };
+  shadows: WheelValue;
+  midtones: WheelValue;
+  highlights: WheelValue;
+  global: WheelValue;
 }
 
 export interface GradingState {
@@ -17,12 +23,14 @@ export interface GradingState {
   tint: number;
 }
 
+const initialWheel: WheelValue = { x: 0, y: 0, luma: 1.0 };
+
 const initialState: GradingState = {
   primary: {
-    lift: { r: 0, g: 0, b: 0, y: 0 },
-    gamma: { r: 0, g: 0, b: 0, y: 0 },
-    gain: { r: 0, g: 0, b: 0, y: 0 },
-    offset: { r: 0, g: 0, b: 0, y: 0 },
+    shadows: { ...initialWheel },
+    midtones: { ...initialWheel },
+    highlights: { ...initialWheel },
+    global: { ...initialWheel },
   },
   contrast: 0,
   pivot: 0.5,
@@ -37,10 +45,13 @@ export const gradingSlice = createSlice({
   reducers: {
     setPrimaryWheel: (
       state,
-      action: PayloadAction<{ wheel: keyof PrimaryWheels; r?: number; g?: number; b?: number; y?: number }>
+      action: PayloadAction<{ wheel: keyof PrimaryWheels; x?: number; y?: number; luma?: number }>
     ) => {
       const { wheel, ...values } = action.payload;
       state.primary[wheel] = { ...state.primary[wheel], ...values };
+    },
+    resetPrimaryWheel: (state, action: PayloadAction<keyof PrimaryWheels>) => {
+      state.primary[action.payload] = { ...initialWheel };
     },
     setContrast: (state, action: PayloadAction<number>) => {
       state.contrast = action.payload;
@@ -64,6 +75,7 @@ export const gradingSlice = createSlice({
 
 export const {
   setPrimaryWheel,
+  resetPrimaryWheel,
   setContrast,
   setPivot,
   setSaturation,
