@@ -79,8 +79,8 @@ const ExportModal: React.FC = () => {
             </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/10">
-            <p className="text-xs text-blue-400/80 leading-relaxed">
+          <div className="p-4 rounded-xl bg-[var(--accent-blue)]/5 border border-[var(--accent-blue)]/10">
+            <p className="text-xs text-[var(--accent-blue)]/80 leading-relaxed">
               Exporting will apply all your grading adjustments to the original high-resolution image using our 32-bit WebGL engine.
             </p>
           </div>
@@ -89,13 +89,13 @@ const ExportModal: React.FC = () => {
         <div className="p-6 bg-[var(--bg-control)] border-t border-[var(--border)] flex gap-3">
           <button
             onClick={() => dispatch(setExportModalOpen(false))}
-            className="flex-1 py-3 px-4 rounded-xl font-bold text-sm text-[var(--text-secondary)] bg-[var(--bg-hover)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all"
+            className="flex-1 py-3 px-4 rounded-xl font-bold text-sm text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all"
           >
             Cancel
           </button>
           <button
             onClick={handleExport}
-            className="flex-[2] flex items-center justify-center gap-2 py-3 px-4 bg-[var(--accent-blue)] hover:bg-blue-600 text-white rounded-xl text-sm font-bold transition-all active:scale-95 shadow-lg shadow-blue-900/30"
+            className="flex-[2] flex items-center justify-center gap-2 py-3 px-4 bg-[var(--accent-blue)] hover:opacity-90 text-white rounded-xl text-sm font-bold transition-all active:scale-95 shadow-lg shadow-blue-900/10"
           >
             <Download size={18} />
             Download Image

@@ -73,7 +73,7 @@ const TopBar: React.FC = () => {
       <div className="flex items-center">
         <button 
           onClick={() => dispatch(setExportModalOpen(true))}
-          className="flex items-center gap-2 bg-[var(--accent-blue)] hover:bg-blue-600 text-white px-4 py-1.5 rounded text-xs font-semibold transition-all shadow-lg shadow-blue-900/20"
+          className="flex items-center gap-2 bg-[var(--accent-blue)] hover:opacity-90 active:scale-95 text-white px-4 py-1.5 rounded text-xs font-semibold transition-all shadow-lg shadow-blue-900/10"
         >
           <Download size={14} />
           Export

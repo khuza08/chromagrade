@@ -1,24 +1,49 @@
 @import "tailwindcss";
 
 :root {
-  /* ChromaGrade Design System - Dark Professional Theme */
-  --bg-base: #0F0F0F;
-  --bg-panel: #1A1A1A;
-  --bg-control: #242424;
-  --bg-hover: #2E2E2E;
-  --border: #333333;
-  --text-primary: #E8E8E8;
-  --text-secondary: #888888;
-  --accent-blue: #4D9EFF;
-  --accent-green: #4CAF50;
-  --accent-orange: #FF7043;
-  --accent-red: #F44336;
-  
+  --bg-base: #FFFFFF;
+  --bg-panel: #F2F2F7;
+  --bg-control: #E5E5EA;
+  --bg-hover: #D1D1D6;
+  --border: #C6C6C8;
+  --text-primary: #000000;
+  --text-secondary: #3C3C43;
+  --text-tertiary: #8E8E93;
+
+  --accent-blue: #007AFF;
+  --accent-green: #34C759;
+  --accent-orange: #FF9500;
+  --accent-red: #FF3B30;
+  --accent-yellow: #FFCC00;
+  --accent-purple: #AF52DE;
+
   /* Curves colors */
-  --curve-r: #FF4444;
-  --curve-g: #44FF44;
-  --curve-b: #4488FF;
-  --curve-luma: #FFFFFF;
+  --curve-r: #FF3B30;
+  --curve-g: #34C759;
+  --curve-b: #007AFF;
+  --curve-luma: #8E8E93;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg-base: #000000;
+    --bg-panel: #1C1C1E;
+    --bg-control: #2C2C2E;
+    --bg-hover: #3A3A3C;
+    --border: #38383A;
+    --text-primary: #FFFFFF;
+    --text-secondary: #EBEBF5;
+    --text-tertiary: #8E8E93;
+
+    --accent-blue: #0A84FF;
+    --accent-green: #30D158;
+    --accent-orange: #FF9F0A;
+    --accent-red: #FF453A;
+    --accent-yellow: #FFD60A;
+    --accent-purple: #BF5AF2;
+
+    --curve-luma: #FFFFFF;
+  }
 }
 
 body {
@@ -27,9 +52,10 @@ body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   margin: 0;
   overflow: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Custom scrollbars for professional look */
+/* Custom scrollbars */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -45,5 +71,5 @@ body {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--border);
+  background: var(--bg-hover);
 }
