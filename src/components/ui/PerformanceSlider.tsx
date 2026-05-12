@@ -1,0 +1,75 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { useSelector } from 'react-redux';
+import { canvasEngine } from '../../lib/CanvasEngine';
+import type { RootState } from '../../store/store';
+
+interface PerformanceSliderProps {
+  label: string;
+  min: number;
+  max: number;
+  step?: number;
+  value: number;
+  onChange: (value: number) => void; // This will be the Redux dispatch
+}
+
+const PerformanceSlider: React.FC<PerformanceSliderProps> = ({ label, min, max, step = 1, value, onChange }) => {
+  const [localValue, setLocalValue] = useState(value);
+  const isDragging = useRef(false);
+  const currentGrading = useSelector((state: RootState) => state.grading);
+
+  // Sync with Redux when it changes from outside (e.g. Undo/Redo)
+  useEffect(() => {
+    if (!isDragging.current) {
+      setLocalValue(value);
+    }
+  }, [value]);
+
+  const handleDrag = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newVal = parseFloat(e.target.value);
+    setLocalValue(newVal);
+    isDragging.current = true;
+
+    // Direct engine update for 60fps performance
+    // We create a temporary grading state with the local value
+    const tempParams = { ...currentGrading };
+    if (label.toLowerCase() === 'contrast') {
+      tempParams.contrast = newVal;
+    } else if (label.toLowerCase() === 'saturation') {
+      tempParams.saturation = newVal;
+    }
+    // ... add more mappings as needed
+    
+    canvasEngine.render(tempParams);
+  };
+
+  const handleRelease = () => {
+    isDragging.current = false;
+    onChange(localValue);
+  };
+
+  return (
+    <div className="space-y-1.5 w-full">
+      <div className="flex justify-between items-center px-1">
+        <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-secondary)]">
+          {label}
+        </label>
+        <span className="text-[10px] font-mono text-[var(--accent-blue)] bg-[var(--bg-control)] px-1.5 py-0.5 rounded">
+          {localValue > 0 ? `+${localValue}` : localValue}
+        </span>
+      </div>
+      <input
+        type="range"
+        min={min}
+        max={max}
+        step={step}
+        value={localValue}
+        onChange={handleDrag}
+        onMouseUp={handleRelease}
+        onTouchEnd={handleRelease}
+        className="w-full h-1 bg-[var(--bg-control)] rounded-lg appearance-none cursor-pointer accent-[var(--accent-blue)] hover:accent-blue-400 transition-all"
+      />
+    </div>
+  );
+};
+
+export default PerformanceSlider;

@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+:root {
+  /* ChromaGrade Design System - Dark Professional Theme */
+  --bg-base: #0F0F0F;
+  --bg-panel: #1A1A1A;
+  --bg-control: #242424;
+  --bg-hover: #2E2E2E;
+  --border: #333333;
+  --text-primary: #E8E8E8;
+  --text-secondary: #888888;
+  --accent-blue: #4D9EFF;
+  --accent-green: #4CAF50;
+  --accent-orange: #FF7043;
+  --accent-red: #F44336;
+  
+  /* Curves colors */
+  --curve-r: #FF4444;
+  --curve-g: #44FF44;
+  --curve-b: #4488FF;
+  --curve-luma: #FFFFFF;
+}
+
+body {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  margin: 0;
+  overflow: hidden;
+}
+
+/* Custom scrollbars for professional look */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-base);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bg-control);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border);
+}
