@@ -14,6 +14,18 @@ export interface PrimaryWheels {
   global: WheelValue;
 }
 
+export interface CurvePoint {
+  x: number;      // 0.0 to 1.0
+  y: number;      // 0.0 to 1.0
+}
+
+export interface CurvesState {
+  master: CurvePoint[];
+  red: CurvePoint[];
+  green: CurvePoint[];
+  blue: CurvePoint[];
+}
+
 export interface GradingState {
   primary: PrimaryWheels;
   contrast: number;
@@ -21,9 +33,11 @@ export interface GradingState {
   saturation: number;
   temperature: number;
   tint: number;
+  curves: CurvesState;
 }
 
 const initialWheel: WheelValue = { x: 0, y: 0, luma: 1.0 };
+const initialCurve: CurvePoint[] = [{ x: 0, y: 0 }, { x: 1, y: 1 }];
 
 const initialState: GradingState = {
   primary: {
@@ -37,6 +51,12 @@ const initialState: GradingState = {
   saturation: 0,
   temperature: 0,
   tint: 0,
+  curves: {
+    master: [...initialCurve],
+    red: [...initialCurve],
+    green: [...initialCurve],
+    blue: [...initialCurve],
+  },
 };
 
 export const gradingSlice = createSlice({
@@ -68,6 +88,16 @@ export const gradingSlice = createSlice({
     setTint: (state, action: PayloadAction<number>) => {
       state.tint = action.payload;
     },
+    setCurvePoints: (
+      state,
+      action: PayloadAction<{ channel: keyof CurvesState; points: CurvePoint[] }>
+    ) => {
+      const { channel, points } = action.payload;
+      state.curves[channel] = points;
+    },
+    resetCurve: (state, action: PayloadAction<keyof CurvesState>) => {
+      state.curves[action.payload] = [...initialCurve];
+    },
     resetGrading: () => initialState,
     applySnapshot: (_, action: PayloadAction<GradingState>) => action.payload,
   },
@@ -81,6 +111,8 @@ export const {
   setSaturation,
   setTemperature,
   setTint,
+  setCurvePoints,
+  resetCurve,
   resetGrading,
   applySnapshot,
 } = gradingSlice.actions;

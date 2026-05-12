@@ -1,7 +1,8 @@
-import type { GradingState, WheelValue } from '../store/slices/gradingSlice';
+import type { GradingState, WheelValue, CurvesState } from '../store/slices/gradingSlice';
 import { vertexShaderSource } from './shaders/vertex.glsl';
 import { fragmentShaderSource } from './shaders/fragment.glsl';
 import { compileShader, createProgram } from './shaders/compileShader';
+import { getMonotoneCubicSpline } from './math/spline';
 
 export class CanvasEngine {
   private gl: WebGL2RenderingContext | null = null;
@@ -11,9 +12,16 @@ export class CanvasEngine {
   private _originalImage: HTMLImageElement | null = null;
   private _proxyTexture: WebGLTexture | null = null;
   
+  // Curve LUT Textures
+  private _curveTextures: Record<string, WebGLTexture> = {};
+  
   private _uniforms: Record<string, WebGLUniformLocation> = {};
   private _needsRender: boolean = false;
   private _lastParams: string = '';
+
+  public getCanvas(): HTMLCanvasElement | null {
+    return this.targetCanvas;
+  }
 
   private positionBuffer: WebGLBuffer | null = null;
   private texCoordBuffer: WebGLBuffer | null = null;
@@ -42,11 +50,29 @@ export class CanvasEngine {
     // Cache uniforms
     const uniforms = [
       'u_texture', 'u_resolution', 'u_contrast', 'u_saturation', 
-      'u_temperature', 'u_tint', 'u_shadows', 'u_midtones', 'u_highlights', 'u_global'
+      'u_temperature', 'u_tint', 'u_shadows', 'u_midtones', 'u_highlights', 'u_global',
+      'u_curveMaster', 'u_curveRed', 'u_curveGreen', 'u_curveBlue'
     ];
     uniforms.forEach(name => {
       const location = gl.getUniformLocation(this.program!, name);
       if (location) this._uniforms[name] = location;
+    });
+
+    // Initialize Curve Textures (Default identity mapping)
+    const channels = ['Master', 'Red', 'Green', 'Blue'];
+    const identity = new Uint8Array(256);
+    for (let i = 0; i < 256; i++) identity[i] = i;
+
+    channels.forEach(ch => {
+      const tex = gl.createTexture()!;
+      gl.bindTexture(gl.TEXTURE_2D, tex);
+      // We use LUMINANCE (or RED) for 1D LUT to save memory, 1x256
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, 256, 1, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, identity);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      this._curveTextures[ch] = tex;
     });
 
     // Create Buffers for Fullscreen Quad
@@ -203,7 +229,50 @@ export class CanvasEngine {
     gl.bindTexture(gl.TEXTURE_2D, this._proxyTexture);
     gl.uniform1i(this._uniforms['u_texture'], 0);
 
+    // Bind Curve Textures (Units 1-4)
+    const curveMap = {
+      'u_curveMaster': 'Master',
+      'u_curveRed': 'Red',
+      'u_curveGreen': 'Green',
+      'u_curveBlue': 'Blue'
+    };
+
+    Object.entries(curveMap).forEach(([uniform, ch], index) => {
+      const tex = this._curveTextures[ch];
+      if (tex) {
+        gl.activeTexture(gl.TEXTURE1 + index);
+        gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.uniform1i(this._uniforms[uniform], 1 + index);
+      }
+    });
+
     gl.drawArrays(gl.TRIANGLES, 0, 6);
+  }
+
+  public updateCurveTextures(curves: CurvesState) {
+    if (!this.gl) return;
+    const gl = this.gl;
+
+    const channels: (keyof CurvesState)[] = ['master', 'red', 'green', 'blue'];
+    channels.forEach(ch => {
+      const points = curves[ch];
+      const lut = getMonotoneCubicSpline(points);
+      
+      // Convert Float32Array (0.0-1.0) to Uint8Array (0-255)
+      const data = new Uint8Array(256);
+      for (let i = 0; i < 256; i++) {
+        data[i] = Math.floor(lut[i] * 255.99);
+      }
+
+      const label = ch.charAt(0).toUpperCase() + ch.slice(1);
+      const tex = this._curveTextures[label];
+      if (tex) {
+        gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 256, 1, gl.LUMINANCE, gl.UNSIGNED_BYTE, data);
+      }
+    });
+
+    this._needsRender = true;
   }
 
   public resize(width: number, height: number) {
@@ -275,6 +344,27 @@ export class CanvasEngine {
 
     const g = this.cartesianToRGB(params.primary.global, 0.5);
     setUni('u_global', 'uniform3f', g.r, g.g, g.b);
+
+    // Curves for Export
+    const channels: (keyof CurvesState)[] = ['master', 'red', 'green', 'blue'];
+    channels.forEach((ch, index) => {
+      const lut = getMonotoneCubicSpline(params.curves[ch]);
+      const data = new Uint8Array(256);
+      for (let i = 0; i < 256; i++) data[i] = Math.floor(lut[i] * 255.99);
+
+      const tex = gl.createTexture();
+      gl.activeTexture(gl.TEXTURE1 + index);
+      gl.bindTexture(gl.TEXTURE_2D, tex);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, 256, 1, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, data);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+      const uniformName = `u_curve${ch.charAt(0).toUpperCase() + ch.slice(1)}`;
+      const loc = gl.getUniformLocation(prog, uniformName);
+      if (loc) gl.uniform1i(loc, 1 + index);
+    });
 
     const pLoc = gl.getAttribLocation(prog, 'a_position');
     gl.enableVertexAttribArray(pLoc);

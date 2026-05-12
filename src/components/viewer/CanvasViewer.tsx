@@ -1,8 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { store } from '../../store/store';
 import type { RootState } from '../../store/store';
 import { setImage } from '../../store/slices/imageSlice';
 import { canvasEngine } from '../../lib/CanvasEngine';
+import { setPickerActive } from '../../store/slices/uiSlice';
+import { setCurvePoints } from '../../store/slices/gradingSlice';
+import type { CurvesState } from '../../store/slices/gradingSlice';
 import { Upload, Maximize, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 
 const CanvasViewer: React.FC = () => {
@@ -10,6 +14,8 @@ const CanvasViewer: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const dispatch = useDispatch();
   const { originalUrl, dimensions, fileName } = useSelector((state: RootState) => state.image);
+  const { activeBottomTab, isPickerActive } = useSelector((state: RootState) => state.ui);
+  const { curves } = useSelector((state: RootState) => state.grading);
   const gradingParams = useSelector((state: RootState) => state.grading);
   const [zoom, setZoom] = useState(1.0);
   const [pan, setPan] = useState({ x: 0, y: 0 });
@@ -112,6 +118,45 @@ const CanvasViewer: React.FC = () => {
     });
   };
 
+  const handleCanvasClick = (e: React.MouseEvent) => {
+    if (!isPickerActive || !canvasRef.current) return;
+
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = (e.clientX - rect.left) / rect.width;
+    const y = (e.clientY - rect.top) / rect.height;
+
+    // Sample pixel from canvas
+    const ctx = canvasRef.current.getContext('2d', { willReadFrequently: true });
+    if (!ctx) return;
+
+    const pixelX = Math.floor(x * canvasRef.current.width);
+    const pixelY = Math.floor(y * canvasRef.current.height);
+    const pixel = ctx.getImageData(pixelX, pixelY, 1, 1).data;
+
+    // Get value based on active curve channel
+    let value = 0;
+    const activeCurveChannel = (store.getState() as RootState).ui.activeCurveChannel;
+
+    if (activeCurveChannel === 'master') {
+      // Rec. 709 Luma
+      value = (0.2126 * pixel[0] + 0.7152 * pixel[1] + 0.0722 * pixel[2]) / 255;
+    } else if (activeCurveChannel === 'red') {
+      value = pixel[0] / 255;
+    } else if (activeCurveChannel === 'green') {
+      value = pixel[1] / 255;
+    } else if (activeCurveChannel === 'blue') {
+      value = pixel[2] / 255;
+    }
+    
+    if (activeBottomTab === 'curves') {
+      const currentPoints = curves[activeCurveChannel];
+      const newPoints = [...currentPoints, { x: value, y: value }].sort((a, b) => a.x - b.x);
+      dispatch(setCurvePoints({ channel: activeCurveChannel, points: newPoints }));
+    }
+
+    dispatch(setPickerActive(false));
+  };
+
   const handlePointerUp = (e: React.PointerEvent) => {
     setIsDragging(false);
     (e.target as HTMLElement).releasePointerCapture(e.pointerId);
@@ -186,14 +231,16 @@ const CanvasViewer: React.FC = () => {
       {/* WebGL Canvas */}
       <canvas
         ref={canvasRef}
-        className="object-contain shadow-2xl shadow-black/50 cursor-grab active:cursor-grabbing"
+        className="object-contain shadow-2xl shadow-black/50 transition-shadow duration-300"
         style={{ 
           display: originalUrl ? 'block' : 'none',
           transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
           transition: isDragging ? 'none' : 'transform 0.2s cubic-bezier(0.2, 0, 0, 1)',
           imageRendering: zoom > 1.0 ? 'pixelated' : 'auto',
+          cursor: isPickerActive ? 'crosshair' : isDragging ? 'grabbing' : 'grab',
         }}
         onDoubleClick={resetZoom}
+        onClick={handleCanvasClick}
       />
 
       {/* Viewer HUD */}

@@ -16,6 +16,12 @@ uniform vec3 u_midtones;     // Gamma
 uniform vec3 u_highlights;   // Gain
 uniform vec3 u_global;       // Offset
 
+// Curves LUTs (1D textures)
+uniform sampler2D u_curveMaster;
+uniform sampler2D u_curveRed;
+uniform sampler2D u_curveGreen;
+uniform sampler2D u_curveBlue;
+
 in vec2 v_texCoord;
 out vec4 outColor;
 
@@ -50,6 +56,17 @@ void main() {
   // 7. Saturation
   float luma = dot(color, vec3(0.2126, 0.7152, 0.0722));
   color = mix(vec3(luma), color, u_saturation);
+
+  // 8. Curves
+  // Apply RGB individual channels
+  color.r = texture(u_curveRed, vec2(color.r, 0.5)).r;
+  color.g = texture(u_curveGreen, vec2(color.g, 0.5)).r;
+  color.b = texture(u_curveBlue, vec2(color.b, 0.5)).r;
+
+  // Apply Master curve
+  color.r = texture(u_curveMaster, vec2(color.r, 0.5)).r;
+  color.g = texture(u_curveMaster, vec2(color.g, 0.5)).r;
+  color.b = texture(u_curveMaster, vec2(color.b, 0.5)).r;
 
   // Final Clamping
   color = clamp(color, 0.0, 1.0);

@@ -4,6 +4,7 @@ import type { RootState } from '../../store/store';
 import { setTab } from '../../store/slices/uiSlice';
 import { Circle, Activity, Pipette, Palette, Sparkles, Map } from 'lucide-react';
 import WheelsPanel from '../panels/WheelsPanel';
+import CurvesPanel from '../panels/CurvesPanel';
 
 const tabs = [
   { id: 'wheels', label: 'Wheels', icon: Circle },
@@ -45,6 +46,8 @@ const BottomPanel: React.FC = () => {
       <div className="flex-1 overflow-hidden">
         {activeTab === 'wheels' ? (
           <WheelsPanel />
+        ) : activeTab === 'curves' ? (
+          <CurvesPanel />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-[var(--text-secondary)] text-sm italic">
             {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Panel coming soon...

@@ -6,6 +6,8 @@ interface UIState {
   zoom: number;
   showBeforeAfter: boolean;
   isExportModalOpen: boolean;
+  isPickerActive: boolean;
+  activeCurveChannel: 'master' | 'red' | 'green' | 'blue';
 }
 
 const initialState: UIState = {
@@ -13,6 +15,8 @@ const initialState: UIState = {
   zoom: 1,
   showBeforeAfter: false,
   isExportModalOpen: false,
+  isPickerActive: false,
+  activeCurveChannel: 'master',
 };
 
 export const uiSlice = createSlice({
@@ -31,9 +35,22 @@ export const uiSlice = createSlice({
     setExportModalOpen: (state, action: PayloadAction<boolean>) => {
       state.isExportModalOpen = action.payload;
     },
+    setPickerActive: (state, action: PayloadAction<boolean>) => {
+      state.isPickerActive = action.payload;
+    },
+    setActiveCurveChannel: (state, action: PayloadAction<UIState['activeCurveChannel']>) => {
+      state.activeCurveChannel = action.payload;
+    },
   },
 });
 
-export const { setTab, setZoom, toggleBeforeAfter, setExportModalOpen } = uiSlice.actions;
+export const { 
+  setTab, 
+  setZoom, 
+  toggleBeforeAfter, 
+  setExportModalOpen, 
+  setPickerActive,
+  setActiveCurveChannel
+} = uiSlice.actions;
 
 export default uiSlice.reducer;
