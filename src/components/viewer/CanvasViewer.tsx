@@ -113,7 +113,11 @@ const CanvasViewer: React.FC = () => {
     setPan({ x: 0, y: 0 });
   };
 
+  const isHslTargetActive = useSelector((state: RootState) => state.ui.isHslTargetActive);
+
   const handlePointerDown = (e: React.PointerEvent) => {
+    if (isHslTargetActive) return;
+    
     // Allow panning if zoomed in OR if the image is larger than container
     setIsDragging(true);
     dragStart.current = { x: e.clientX - pan.x, y: e.clientY - pan.y };
@@ -132,16 +136,11 @@ const CanvasViewer: React.FC = () => {
     if (!isPickerActive || !canvasRef.current) return;
 
     const rect = canvasRef.current.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width;
-    const y = (e.clientY - rect.top) / rect.height;
+    const normX = (e.clientX - rect.left) / rect.width;
+    const normY = (e.clientY - rect.top) / rect.height;
 
-    // Sample pixel from canvas
-    const ctx = canvasRef.current.getContext('2d', { willReadFrequently: true });
-    if (!ctx) return;
-
-    const pixelX = Math.floor(x * canvasRef.current.width);
-    const pixelY = Math.floor(y * canvasRef.current.height);
-    const pixel = ctx.getImageData(pixelX, pixelY, 1, 1).data;
+    // Sample pixel from WebGL canvas using the engine
+    const pixel = canvasEngine.samplePixel(normX, normY);
 
     // Get value based on active curve channel
     let value = 0;

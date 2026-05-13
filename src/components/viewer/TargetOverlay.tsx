@@ -20,21 +20,17 @@ const TargetOverlay: React.FC = () => {
 
   if (!isTargetActive) return null;
 
-  const handleMouseDown = (e: React.MouseEvent) => {
+  const handleMouseDown = (e: React.PointerEvent) => {
+    e.stopPropagation();
     const canvas = canvasEngine.getCanvas();
     if (!canvas) return;
 
     const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width;
-    const y = (e.clientY - rect.top) / rect.height;
+    const normX = (e.clientX - rect.left) / rect.width;
+    const normY = (e.clientY - rect.top) / rect.height;
 
-    // Sample from canvas (proxy)
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    if (!ctx) return;
-
-    const pixelX = Math.floor(x * canvas.width);
-    const pixelY = Math.floor(y * canvas.height);
-    const pixel = ctx.getImageData(pixelX, pixelY, 1, 1).data;
+    // Sample from WebGL canvas using the engine
+    const pixel = canvasEngine.samplePixel(normX, normY);
 
     // Convert to HSL and find bins
     const { h } = rgbToHsl(pixel[0], pixel[1], pixel[2]);
@@ -58,7 +54,8 @@ const TargetOverlay: React.FC = () => {
     dispatch(setHslWeights(weightsMap));
   };
 
-  const handleMouseMove = (e: React.MouseEvent) => {
+  const handleMouseMove = (e: React.PointerEvent) => {
+    e.stopPropagation();
     if (!isDragging) return;
 
     const deltaY = startY.current - e.clientY; // Up is positive
@@ -73,7 +70,8 @@ const TargetOverlay: React.FC = () => {
     });
   };
 
-  const handleMouseUp = () => {
+  const handleMouseUp = (e: React.PointerEvent) => {
+    e.stopPropagation();
     if (!isDragging) {
       dispatch(setHslTargetActive(false));
     }
@@ -84,10 +82,10 @@ const TargetOverlay: React.FC = () => {
   return (
     <div 
       className={`absolute inset-0 z-40 flex items-center justify-center bg-black/10 ${isDragging ? 'cursor-ns-resize' : 'cursor-crosshair'}`}
-      onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
+      onPointerDown={handleMouseDown}
+      onPointerMove={handleMouseMove}
+      onPointerUp={handleMouseUp}
+      onPointerLeave={handleMouseUp}
     >
       {!isDragging && (
         <div className="bg-black/20 backdrop-blur-md border border-white/20 px-4 py-2 rounded-full pointer-events-none">

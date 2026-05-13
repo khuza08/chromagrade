@@ -350,6 +350,19 @@ export class CanvasEngine {
     }
   }
 
+  public samplePixel(normX: number, normY: number): Uint8Array {
+    if (!this.gl) return new Uint8Array([0,0,0,255]);
+    const gl = this.gl;
+    
+    // WebGL coordinates start from bottom-left
+    const x = Math.floor(normX * gl.drawingBufferWidth);
+    const y = Math.floor((1.0 - normY) * gl.drawingBufferHeight);
+    
+    const pixels = new Uint8Array(4);
+    gl.readPixels(x, y, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, pixels);
+    return pixels;
+  }
+
   public exportHighRes(params: GradingState): HTMLCanvasElement {
     if (!this._originalImage) throw new Error('No image loaded');
 
