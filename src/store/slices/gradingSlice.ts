@@ -14,16 +14,21 @@ export interface PrimaryWheels {
   global: WheelValue;
 }
 
-export interface CurvePoint {
-  x: number;      // 0.0 to 1.0
-  y: number;      // 0.0 to 1.0
+export interface HSLValues {
+  h: number;      // -1.0 to 1.0 (Hue shift)
+  s: number;      // -1.0 to 1.0 (Saturation delta)
+  l: number;      // -1.0 to 1.0 (Luminance delta)
 }
 
-export interface CurvesState {
-  master: CurvePoint[];
-  red: CurvePoint[];
-  green: CurvePoint[];
-  blue: CurvePoint[];
+export interface HSLState {
+  red: HSLValues;
+  orange: HSLValues;
+  yellow: HSLValues;
+  green: HSLValues;
+  aqua: HSLValues;
+  blue: HSLValues;
+  purple: HSLValues;
+  magenta: HSLValues;
 }
 
 export interface GradingState {
@@ -34,10 +39,12 @@ export interface GradingState {
   temperature: number;
   tint: number;
   curves: CurvesState;
+  hsl: HSLState;
 }
 
 const initialWheel: WheelValue = { x: 0, y: 0, luma: 1.0 };
 const initialCurve: CurvePoint[] = [{ x: 0, y: 0 }, { x: 1, y: 1 }];
+const initialHSL: HSLValues = { h: 0, s: 0, l: 0 };
 
 const initialState: GradingState = {
   primary: {
@@ -56,6 +63,16 @@ const initialState: GradingState = {
     red: [...initialCurve],
     green: [...initialCurve],
     blue: [...initialCurve],
+  },
+  hsl: {
+    red: { ...initialHSL },
+    orange: { ...initialHSL },
+    yellow: { ...initialHSL },
+    green: { ...initialHSL },
+    aqua: { ...initialHSL },
+    blue: { ...initialHSL },
+    purple: { ...initialHSL },
+    magenta: { ...initialHSL },
   },
 };
 
@@ -98,6 +115,19 @@ export const gradingSlice = createSlice({
     resetCurve: (state, action: PayloadAction<keyof CurvesState>) => {
       state.curves[action.payload] = [...initialCurve];
     },
+    setHSLChannel: (
+      state,
+      action: PayloadAction<{ channel: keyof HSLState; h?: number; s?: number; l?: number }>
+    ) => {
+      const { channel, ...values } = action.payload;
+      state.hsl[channel] = { ...state.hsl[channel], ...values };
+    },
+    resetHSLChannel: (state, action: PayloadAction<keyof HSLState>) => {
+      state.hsl[action.payload] = { ...initialHSL };
+    },
+    resetAllHSL: (state) => {
+      state.hsl = { ...initialState.hsl };
+    },
     resetGrading: () => initialState,
     applySnapshot: (_, action: PayloadAction<GradingState>) => action.payload,
   },
@@ -113,6 +143,9 @@ export const {
   setTint,
   setCurvePoints,
   resetCurve,
+  setHSLChannel,
+  resetHSLChannel,
+  resetAllHSL,
   resetGrading,
   applySnapshot,
 } = gradingSlice.actions;

@@ -8,6 +8,9 @@ interface UIState {
   isExportModalOpen: boolean;
   isPickerActive: boolean;
   activeCurveChannel: 'master' | 'red' | 'green' | 'blue';
+  activeHslAttribute: 'hue' | 'sat' | 'lum';
+  isHslTargetActive: boolean;
+  hslWeights: Record<string, number>;
 }
 
 const initialState: UIState = {
@@ -17,6 +20,9 @@ const initialState: UIState = {
   isExportModalOpen: false,
   isPickerActive: false,
   activeCurveChannel: 'master',
+  activeHslAttribute: 'sat',
+  isHslTargetActive: false,
+  hslWeights: {},
 };
 
 export const uiSlice = createSlice({
@@ -41,6 +47,16 @@ export const uiSlice = createSlice({
     setActiveCurveChannel: (state, action: PayloadAction<UIState['activeCurveChannel']>) => {
       state.activeCurveChannel = action.payload;
     },
+    setActiveHslAttribute: (state, action: PayloadAction<UIState['activeHslAttribute']>) => {
+      state.activeHslAttribute = action.payload;
+    },
+    setHslTargetActive: (state, action: PayloadAction<boolean>) => {
+      state.isHslTargetActive = action.payload;
+      if (!action.payload) state.hslWeights = {};
+    },
+    setHslWeights: (state, action: PayloadAction<Record<string, number>>) => {
+      state.hslWeights = action.payload;
+    },
   },
 });
 
@@ -50,7 +66,10 @@ export const {
   toggleBeforeAfter, 
   setExportModalOpen, 
   setPickerActive,
-  setActiveCurveChannel
+  setActiveCurveChannel,
+  setActiveHslAttribute,
+  setHslTargetActive,
+  setHslWeights
 } = uiSlice.actions;
 
 export default uiSlice.reducer;

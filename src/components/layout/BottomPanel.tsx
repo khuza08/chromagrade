@@ -5,6 +5,7 @@ import { setTab } from '../../store/slices/uiSlice';
 import { Circle, Activity, Pipette, Palette, Sparkles, Map } from 'lucide-react';
 import WheelsPanel from '../panels/WheelsPanel';
 import CurvesPanel from '../panels/CurvesPanel';
+import HSLPanel from '../panels/HSLPanel';
 
 const tabs = [
   { id: 'wheels', label: 'Wheels', icon: Circle },
@@ -48,6 +49,8 @@ const BottomPanel: React.FC = () => {
           <WheelsPanel />
         ) : activeTab === 'curves' ? (
           <CurvesPanel />
+        ) : activeTab === 'hsl' ? (
+          <HSLPanel />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-[var(--text-secondary)] text-sm italic">
             {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Panel coming soon...

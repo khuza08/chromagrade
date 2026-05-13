@@ -6,8 +6,8 @@ import { setImage } from '../../store/slices/imageSlice';
 import { canvasEngine } from '../../lib/CanvasEngine';
 import { setPickerActive } from '../../store/slices/uiSlice';
 import { setCurvePoints } from '../../store/slices/gradingSlice';
-import type { CurvesState } from '../../store/slices/gradingSlice';
 import { Upload, Maximize, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import TargetOverlay from './TargetOverlay';
 
 const CanvasViewer: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -55,6 +55,16 @@ const CanvasViewer: React.FC = () => {
       canvasEngine.render(gradingParams);
     }
   }, [gradingParams, originalUrl]);
+
+  // Update Curve and HSL Textures separately to avoid excessive LUT generation
+  useEffect(() => {
+    canvasEngine.updateCurveTextures(curves);
+  }, [curves]);
+
+  useEffect(() => {
+    canvasEngine.updateHslTextures(gradingParams.hsl);
+  }, [gradingParams.hsl]);
+
 
   // Handle Resizing
   useEffect(() => {
@@ -229,6 +239,7 @@ const CanvasViewer: React.FC = () => {
       )}
 
       {/* WebGL Canvas */}
+      <TargetOverlay />
       <canvas
         ref={canvasRef}
         className="object-contain shadow-2xl shadow-black/50 transition-shadow duration-300"

@@ -1,8 +1,9 @@
-import type { GradingState, WheelValue, CurvesState } from '../store/slices/gradingSlice';
+import type { GradingState, WheelValue, CurvesState, HSLState } from '../store/slices/gradingSlice';
 import { vertexShaderSource } from './shaders/vertex.glsl';
 import { fragmentShaderSource } from './shaders/fragment.glsl';
 import { compileShader, createProgram } from './shaders/compileShader';
 import { getMonotoneCubicSpline } from './math/spline';
+import { mapHueToBins } from './hsl/targetTool';
 
 export class CanvasEngine {
   private gl: WebGL2RenderingContext | null = null;
@@ -14,6 +15,9 @@ export class CanvasEngine {
   
   // Curve LUT Textures
   private _curveTextures: Record<string, WebGLTexture> = {};
+  
+  // HSL LUT Textures
+  private _hslTextures: Record<string, WebGLTexture> = {};
   
   private _uniforms: Record<string, WebGLUniformLocation> = {};
   private _needsRender: boolean = false;
@@ -51,7 +55,8 @@ export class CanvasEngine {
     const uniforms = [
       'u_texture', 'u_resolution', 'u_contrast', 'u_saturation', 
       'u_temperature', 'u_tint', 'u_shadows', 'u_midtones', 'u_highlights', 'u_global',
-      'u_curveMaster', 'u_curveRed', 'u_curveGreen', 'u_curveBlue'
+      'u_curveMaster', 'u_curveRed', 'u_curveGreen', 'u_curveBlue',
+      'u_hslHue', 'u_hslSat', 'u_hslLum'
     ];
     uniforms.forEach(name => {
       const location = gl.getUniformLocation(this.program!, name);
@@ -73,6 +78,21 @@ export class CanvasEngine {
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
       this._curveTextures[ch] = tex;
+    });
+
+    // Initialize HSL Textures (Default neutral/center mapping)
+    const hslChannels = ['Hue', 'Sat', 'Lum'];
+    const neutral = new Uint8Array(256).fill(128); // 128/255 approx 0.5 (zero delta)
+
+    hslChannels.forEach(ch => {
+      const tex = gl.createTexture()!;
+      gl.bindTexture(gl.TEXTURE_2D, tex);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, 256, 1, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, neutral);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT); // Hue is circular
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      this._hslTextures[ch] = tex;
     });
 
     // Create Buffers for Fullscreen Quad
@@ -246,6 +266,22 @@ export class CanvasEngine {
       }
     });
 
+    // Bind HSL Textures (Units 5-7)
+    const hslMap = {
+      'u_hslHue': 'Hue',
+      'u_hslSat': 'Sat',
+      'u_hslLum': 'Lum'
+    };
+
+    Object.entries(hslMap).forEach(([uniform, ch], index) => {
+      const tex = this._hslTextures[ch];
+      if (tex) {
+        gl.activeTexture(gl.TEXTURE5 + index);
+        gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.uniform1i(this._uniforms[uniform], 5 + index);
+      }
+    });
+
     gl.drawArrays(gl.TRIANGLES, 0, 6);
   }
 
@@ -266,6 +302,38 @@ export class CanvasEngine {
 
       const label = ch.charAt(0).toUpperCase() + ch.slice(1);
       const tex = this._curveTextures[label];
+      if (tex) {
+        gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 256, 1, gl.LUMINANCE, gl.UNSIGNED_BYTE, data);
+      }
+    });
+
+    this._needsRender = true;
+  }
+
+  public updateHslTextures(hsl: HSLState) {
+    if (!this.gl) return;
+    const gl = this.gl;
+
+    const attributes: ('h' | 's' | 'l')[] = ['h', 's', 'l'];
+    const labels = ['Hue', 'Sat', 'Lum'];
+
+    attributes.forEach((attr, i) => {
+      const data = new Uint8Array(256);
+      
+      for (let x = 0; x < 256; x++) {
+        const hue = (x / 255) * 360;
+        const weights = mapHueToBins(hue);
+        
+        let value = 0;
+        weights.forEach(w => {
+          value += hsl[w.bin as keyof HSLState][attr] * w.weight;
+        });
+
+        data[x] = Math.floor(((value + 1.0) / 2.0) * 255.99);
+      }
+
+      const tex = this._hslTextures[labels[i]];
       if (tex) {
         gl.bindTexture(gl.TEXTURE_2D, tex);
         gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, 256, 1, gl.LUMINANCE, gl.UNSIGNED_BYTE, data);
@@ -364,6 +432,33 @@ export class CanvasEngine {
       const uniformName = `u_curve${ch.charAt(0).toUpperCase() + ch.slice(1)}`;
       const loc = gl.getUniformLocation(prog, uniformName);
       if (loc) gl.uniform1i(loc, 1 + index);
+    });
+    
+    // HSL for Export
+    const hslAttrs: ('h' | 's' | 'l')[] = ['h', 's', 'l'];
+    const hslLabels = ['Hue', 'Sat', 'Lum'];
+    hslAttrs.forEach((attr, i) => {
+      const data = new Uint8Array(256);
+      for (let x = 0; x < 256; x++) {
+        const hue = (x / 255) * 360;
+        const weights = mapHueToBins(hue);
+        let val = 0;
+        weights.forEach(w => { val += params.hsl[w.bin as keyof HSLState][attr] * w.weight; });
+        data[x] = Math.floor(((val + 1.0) / 2.0) * 255.99);
+      }
+
+      const tex = gl.createTexture();
+      gl.activeTexture(gl.TEXTURE5 + i);
+      gl.bindTexture(gl.TEXTURE_2D, tex);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.LUMINANCE, 256, 1, 0, gl.LUMINANCE, gl.UNSIGNED_BYTE, data);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+      const uniformName = `u_hsl${hslLabels[i]}`;
+      const loc = gl.getUniformLocation(prog, uniformName);
+      if (loc) gl.uniform1i(loc, 5 + i);
     });
 
     const pLoc = gl.getAttribLocation(prog, 'a_position');
