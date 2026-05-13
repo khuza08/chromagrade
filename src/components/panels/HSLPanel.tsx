@@ -52,11 +52,13 @@ const HSLPanel: React.FC = () => {
       {/* Header with Target Tool Selection */}
       <div className="flex items-center justify-between pb-4 border-b border-[var(--border)]">
         <div className="flex items-center gap-4">
-          <div className="flex gap-2">
-            <HSLHeaderDot attribute="hue" label="Hue" />
-            <HSLHeaderDot attribute="sat" label="Sat" />
-            <HSLHeaderDot attribute="lum" label="Lum" />
-          </div>
+          {viewMode === 'hsl' && (
+            <div className="flex gap-2">
+              <HSLHeaderDot attribute="hue" label="Hue" />
+              <HSLHeaderDot attribute="sat" label="Sat" />
+              <HSLHeaderDot attribute="lum" label="Lum" />
+            </div>
+          )}
           <button
             onClick={handleReset}
             className="p-1.5 rounded-md hover:bg-white/5 text-[var(--text-tertiary)] hover:text-[var(--text-primary)] transition-colors group"
@@ -82,55 +84,61 @@ const HSLPanel: React.FC = () => {
               Color
             </button>
           </div>
-          <div className="flex flex-col items-end bg-[var(--bg-control)] rounded px-2 py-1">
+          <div className="flex flex-col items-end">
             <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-primary)]">
-              {viewMode === 'hsl' ? attributeLabels[activeAttribute] : `${activeBin.label} Channel`}
+              {viewMode === 'hsl' ? attributeLabels[activeAttribute] : `${activeBin.label.toUpperCase()} CHANNEL`}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Mode Specific UI */}
-      {viewMode === 'color' && (
-        <div className="flex justify-center gap-3 py-1">
-          {colorBins.map((bin) => (
-            <button
-              key={bin.id}
-              onClick={() => dispatch(setActiveColorBin(bin.id))}
-              className={`color-swatch ${activeBinId === bin.id ? 'ring-2 ring-[var(--accent-blue)] ring-offset-2 ring-offset-[var(--bg-panel)] scale-125' : 'opacity-60 hover:opacity-100'}`}
-              style={{ backgroundColor: `hsl(${bin.hue}, 80%, 50%)` }}
-              title={bin.label}
-            />
-          ))}
-        </div>
-      )}
-
-      {/* Sliders Area */}
-      <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+      {/* Main Content Area */}
+      <div className="flex-1 flex items-center justify-center overflow-hidden">
         {viewMode === 'hsl' ? (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-6 pt-2">
-            {colorBins.map((bin) => (
-              <HSLSlider
-                key={bin.id}
-                channel={bin.id}
-                type={attributeKeys[activeAttribute]}
-                label={bin.label}
-                hueDeg={bin.hue}
-              />
-            ))}
+          <div className="w-full h-full overflow-y-auto pr-2 custom-scrollbar">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-8 gap-y-6 pt-2">
+              {colorBins.map((bin) => (
+                <HSLSlider
+                  key={bin.id}
+                  channel={bin.id}
+                  type={attributeKeys[activeAttribute]}
+                  label={bin.label}
+                  hueDeg={bin.hue}
+                />
+              ))}
+            </div>
           </div>
         ) : (
-          <div className="flex flex-col gap-8 max-w-md mx-auto pt-4">
-            {(['h', 's', 'l'] as const).map((t) => (
-              <HSLSlider
-                key={`${activeBinId}-${t}`}
-                channel={activeBinId}
-                type={t}
-                label={t === 'h' ? 'Hue' : t === 's' ? 'Saturation' : 'Luminance'}
-                hueDeg={activeBin.hue}
-                singleColorMode
-              />
-            ))}
+          <div className="flex flex-col md:flex-row items-center gap-12 max-w-4xl w-full px-4">
+            {/* Left Column: Swatch Grid */}
+            <div className="flex flex-col items-center gap-4 shrink-0">
+              <div className="grid grid-cols-3 gap-4">
+                {colorBins.map((bin) => (
+                  <button
+                    key={bin.id}
+                    onClick={() => dispatch(setActiveColorBin(bin.id))}
+                    className={`color-swatch ${activeBinId === bin.id ? 'ring-2 ring-white ring-offset-2 ring-offset-[var(--bg-panel)] scale-125' : 'opacity-60 hover:opacity-100'}`}
+                    style={{ backgroundColor: `hsl(${bin.hue}, 80%, 50%)` }}
+                    title={bin.label}
+                    aria-label={bin.label}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {/* Right Column: Triple Sliders */}
+            <div className="flex-1 w-full space-y-2">
+              {(['h', 's', 'l'] as const).map((t) => (
+                <HSLSlider
+                  key={`${activeBinId}-${t}`}
+                  channel={activeBinId}
+                  type={t}
+                  label={t === 'h' ? 'HUE' : t === 's' ? 'SATURATION' : 'LUMINANCE'}
+                  hueDeg={activeBin.hue}
+                  singleColorMode
+                />
+              ))}
+            </div>
           </div>
         )}
       </div>

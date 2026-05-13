@@ -24,7 +24,7 @@
   --curve-luma: #8E8E93;
 
   /* HSL UI */
-  --swatch-size: 14px;
+  --swatch-size: 18px;
 }
 
 @media (prefers-color-scheme: dark) {
