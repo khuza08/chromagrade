@@ -114,9 +114,11 @@ const CanvasViewer: React.FC = () => {
   };
 
   const isHslTargetActive = useSelector((state: RootState) => state.ui.isHslTargetActive);
+  const hslViewMode = useSelector((state: RootState) => state.ui.hslViewMode);
 
   const handlePointerDown = (e: React.PointerEvent) => {
-    if (isHslTargetActive) return;
+    // Block panning if Target Tool is active (Target Tool only works in HSL mode)
+    if (isHslTargetActive && hslViewMode === 'hsl') return;
     
     // Allow panning if zoomed in OR if the image is larger than container
     setIsDragging(true);

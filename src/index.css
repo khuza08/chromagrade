@@ -22,6 +22,9 @@
   --curve-g: #34C759;
   --curve-b: #007AFF;
   --curve-luma: #8E8E93;
+
+  /* HSL UI */
+  --swatch-size: 14px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -72,4 +75,9 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--bg-hover);
+}
+
+@layer utilities {
+  .hsl-toggle { @apply text-[10px] font-bold uppercase tracking-widest cursor-pointer transition-opacity; }
+  .color-swatch { @apply w-[var(--swatch-size)] h-[var(--swatch-size)] rounded-full border border-white/10 cursor-pointer transition-all hover:scale-110 active:scale-95; }
 }

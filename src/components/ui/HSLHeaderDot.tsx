@@ -1,7 +1,7 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Target } from 'lucide-react';
-import { setActiveHslAttribute, setHslTargetActive } from '../../store/slices/uiSlice';
+import { setActiveHslAttribute, setHslTargetActive, setHslViewMode } from '../../store/slices/uiSlice';
 import type { RootState } from '../../store/store';
 
 interface HSLHeaderDotProps {
@@ -22,6 +22,7 @@ const HSLHeaderDot: React.FC<HSLHeaderDotProps> = ({ attribute, label }) => {
     } else {
       dispatch(setActiveHslAttribute(attribute));
       dispatch(setHslTargetActive(true));
+      dispatch(setHslViewMode('hsl'));
     }
   };
 

@@ -10,12 +10,14 @@ interface HSLSliderProps {
   type: 'h' | 's' | 'l';
   label: string;
   hueDeg: number;
+  singleColorMode?: boolean;
 }
 
-const HSLSlider: React.FC<HSLSliderProps> = ({ channel, type, label, hueDeg }) => {
+const HSLSlider: React.FC<HSLSliderProps> = ({ channel, type, label, hueDeg, singleColorMode }) => {
   const dispatch = useDispatch();
   const value = useSelector((state: RootState) => state.grading.hsl[channel][type]);
   const glowWeight = useSelector((state: RootState) => state.ui.hslWeights[channel] || 0); 
+  const isGlowActive = glowWeight > 0 && !singleColorMode;
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     dispatch(setHSLChannel({ channel, [type]: parseFloat(e.target.value) }));
@@ -48,10 +50,10 @@ const HSLSlider: React.FC<HSLSliderProps> = ({ channel, type, label, hueDeg }) =
           step="0.01"
           value={value}
           onChange={handleChange}
-          className={`hsl-slider-input ${glowWeight > 0 ? 'slider-glow' : ''}`}
+          className={`hsl-slider-input ${isGlowActive ? 'slider-glow' : ''}`}
           style={{ 
             '--glow-color': `hsl(${hueDeg}, 100%, 70%)`,
-            '--glow-opacity': glowWeight 
+            '--glow-opacity': isGlowActive ? glowWeight : 0 
           } as React.CSSProperties}
         />
       </div>

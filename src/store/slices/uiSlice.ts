@@ -1,5 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
+import type { HSLState } from './gradingSlice';
 
 interface UIState {
   activeBottomTab: 'wheels' | 'curves' | 'hsl' | 'lut' | 'ai' | 'presets';
@@ -11,6 +12,8 @@ interface UIState {
   activeHslAttribute: 'hue' | 'sat' | 'lum';
   isHslTargetActive: boolean;
   hslWeights: Record<string, number>;
+  hslViewMode: 'hsl' | 'color';
+  activeColorBin: keyof HSLState;
 }
 
 const initialState: UIState = {
@@ -23,6 +26,8 @@ const initialState: UIState = {
   activeHslAttribute: 'sat',
   isHslTargetActive: false,
   hslWeights: {},
+  hslViewMode: 'hsl',
+  activeColorBin: 'red',
 };
 
 export const uiSlice = createSlice({
@@ -57,6 +62,12 @@ export const uiSlice = createSlice({
     setHslWeights: (state, action: PayloadAction<Record<string, number>>) => {
       state.hslWeights = action.payload;
     },
+    setHslViewMode: (state, action: PayloadAction<UIState['hslViewMode']>) => {
+      state.hslViewMode = action.payload;
+    },
+    setActiveColorBin: (state, action: PayloadAction<UIState['activeColorBin']>) => {
+      state.activeColorBin = action.payload;
+    },
   },
 });
 
@@ -69,7 +80,9 @@ export const {
   setActiveCurveChannel,
   setActiveHslAttribute,
   setHslTargetActive,
-  setHslWeights
+  setHslWeights,
+  setHslViewMode,
+  setActiveColorBin
 } = uiSlice.actions;
 
 export default uiSlice.reducer;
