@@ -38,7 +38,7 @@ const TopBar: React.FC = () => {
         <button className="p-1 hover:bg-[var(--bg-hover)] rounded text-[var(--text-secondary)]">
           <Menu size={20} />
         </button>
-        <h1 className="text-sm font-bold tracking-tight bg-gradient-to-r from-[var(--accent-blue)] to-cyan-400 bg-clip-text text-transparent">
+        <h1 className="text-sm font-bold tracking-tight bg-gradient-to-r from-[var(--theme-primary)] to-[var(--theme-light)] bg-clip-text text-transparent">
           ChromaGrade
         </h1>
       </div>
@@ -73,7 +73,7 @@ const TopBar: React.FC = () => {
       <div className="flex items-center">
         <button 
           onClick={() => dispatch(setExportModalOpen(true))}
-          className="flex items-center gap-2 bg-[var(--accent-blue)] hover:opacity-90 active:scale-95 text-white px-4 py-1.5 rounded text-xs font-semibold transition-all shadow-lg shadow-blue-900/10"
+          className="flex items-center gap-2 bg-[var(--theme-primary)] hover:opacity-90 active:scale-95 text-white px-4 py-1.5 rounded text-xs font-semibold transition-all shadow-lg shadow-black/20"
         >
           <Download size={14} />
           Export

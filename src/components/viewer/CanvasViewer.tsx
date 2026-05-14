@@ -8,11 +8,14 @@ import { setPickerActive } from '../../store/slices/uiSlice';
 import { setCurvePoints } from '../../store/slices/gradingSlice';
 import { Upload, Maximize, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import TargetOverlay from './TargetOverlay';
+import { extractPalette } from '../../utils/vibrant';
+import { useTheme } from '../../context/ThemeContext';
 
 const CanvasViewer: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const dispatch = useDispatch();
+  const { applyPalette } = useTheme();
   const { originalUrl, dimensions, fileName } = useSelector((state: RootState) => state.image);
   const { activeBottomTab, isPickerActive } = useSelector((state: RootState) => state.ui);
   const { curves } = useSelector((state: RootState) => state.grading);
@@ -64,6 +67,21 @@ const CanvasViewer: React.FC = () => {
   useEffect(() => {
     canvasEngine.updateHslTextures(gradingParams.hsl);
   }, [gradingParams.hsl]);
+
+  // Extract color palette for dynamic UI
+  useEffect(() => {
+    if (!originalUrl) {
+      applyPalette(null);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      const palette = await extractPalette(originalUrl);
+      applyPalette(palette);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [originalUrl, applyPalette]);
 
 
   // Handle Resizing
@@ -216,17 +234,17 @@ const CanvasViewer: React.FC = () => {
           onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
           onDragLeave={() => setIsDragging(false)}
           onDrop={onDrop}
-          className={`absolute inset-0 z-10 flex flex-col items-center justify-center transition-colors duration-300 ${isDragging ? 'bg-[var(--accent-blue)]/10' : 'bg-[var(--bg-base)]'}`}
+          className={`absolute inset-0 z-10 flex flex-col items-center justify-center transition-colors duration-300 ${isDragging ? 'bg-[var(--theme-primary)]/10' : 'bg-[var(--bg-base)]'}`}
         >
-          <div className={`p-12 rounded-3xl border-2 border-dashed flex flex-col items-center gap-6 transition-all ${isDragging ? 'border-[var(--accent-blue)] scale-105 bg-[var(--bg-panel)] shadow-2xl' : 'border-[var(--border)]'}`}>
+          <div className={`p-12 rounded-3xl border-2 border-dashed flex flex-col items-center gap-6 transition-all ${isDragging ? 'border-[var(--theme-primary)] scale-105 bg-[var(--bg-panel)] shadow-2xl' : 'border-[var(--border)]'}`}>
             <div className="w-20 h-20 rounded-2xl bg-[var(--bg-control)] flex items-center justify-center shadow-inner">
-              <Upload size={32} className={isDragging ? 'text-[var(--accent-blue)]' : 'text-[var(--text-secondary)]'} />
+              <Upload size={32} className={isDragging ? 'text-[var(--theme-primary)]' : 'text-[var(--text-secondary)]'} />
             </div>
             <div className="text-center space-y-2">
               <h3 className="text-xl font-bold tracking-tight text-[var(--text-primary)]">Drop your masterpiece here</h3>
               <p className="text-[var(--text-secondary)] text-sm max-w-xs">Supports RAW, JPG, PNG and WebP formats</p>
             </div>
-            <label className="bg-[var(--accent-blue)] hover:opacity-90 text-white px-8 py-2.5 rounded-full text-sm font-bold cursor-pointer transition-all active:scale-95 shadow-lg shadow-[var(--accent-blue)]/20">
+            <label className="bg-[var(--theme-primary)] hover:opacity-90 text-white px-8 py-2.5 rounded-full text-sm font-bold cursor-pointer transition-all active:scale-95 shadow-lg shadow-black/20">
               Browse Files
               <input
                 type="file"
@@ -260,7 +278,7 @@ const CanvasViewer: React.FC = () => {
         <>
           <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
             <div className="flex items-center gap-2 px-2 py-1 bg-[var(--bg-panel)]/20 safari-blur rounded-lg border border-[var(--border)] mr-2 group/zoom">
-              <span className="text-[10px] font-mono text-[var(--accent-blue)] min-w-[32px] text-center">{Math.round(zoom * 100)}%</span>
+              <span className="text-[10px] font-mono text-[var(--theme-primary)] min-w-[32px] text-center">{Math.round(zoom * 100)}%</span>
               <button 
                 onClick={resetZoom}
                 className="hover:text-[var(--accent-blue)] text-[var(--text-secondary)] transition-colors cursor-pointer"

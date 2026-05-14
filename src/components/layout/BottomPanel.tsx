@@ -33,11 +33,11 @@ const BottomPanel: React.FC = () => {
               className={`
                 flex items-center gap-2 px-6 py-2 text-[11px] font-bold uppercase tracking-wider transition-all border-t-2
                 ${isActive 
-                  ? 'bg-[var(--bg-panel)] border-[var(--accent-blue)] text-[var(--text-primary)]' 
+                  ? 'bg-[var(--bg-panel)] border-[var(--theme-primary)] text-[var(--text-primary)]' 
                   : 'border-transparent text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--bg-control)]'}
               `}
             >
-              <Icon size={14} className={isActive ? 'text-[var(--accent-blue)]' : ''} />
+              <Icon size={14} className={isActive ? 'text-[var(--theme-primary)]' : ''} />
               {tab.label}
             </button>
           );

@@ -77,7 +77,7 @@ const CurvesPanel: React.FC = () => {
               onClick={() => dispatch(setPickerActive(!isPickerActive))}
               className={`p-1.5 rounded-md transition-all border ${
                 isPickerActive 
-                  ? 'bg-[var(--accent-blue)] border-[var(--accent-blue)] text-white' 
+                  ? 'bg-[var(--theme-primary)] border-[var(--theme-primary)] text-white' 
                   : 'bg-[var(--bg-base)] border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
               }`}
               title="Targeted Adjustment Tool"
@@ -123,7 +123,7 @@ const CurvesPanel: React.FC = () => {
           </button>
         </div>
 
-        <div className="mt-auto p-3 bg-[var(--accent-blue)]/5 rounded-lg border border-[var(--accent-blue)]/10">
+        <div className="mt-auto p-3 bg-[var(--theme-primary)]/5 rounded-lg border border-[var(--theme-primary)]/10">
           <p className="text-[10px] text-[var(--text-tertiary)] leading-relaxed italic">
             Tip: Double-click to add/remove points. Drag close to the diagonal to snap.
           </p>

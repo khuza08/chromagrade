@@ -25,6 +25,13 @@
 
   /* HSL UI */
   --swatch-size: 18px;
+
+  /* Dynamic Theme Variables - Controlled by node-vibrant */
+  --theme-primary: #0A84FF;   /* accent-blue */
+  --theme-muted:   #30D158;   /* accent-green */
+  --theme-dark:    #FF453A;   /* accent-red */
+  --theme-light:   #FF9F0A;   /* accent-orange */
+  --theme-contrast: #BF5AF2;  /* accent-purple */
 }
 
 @media (prefers-color-scheme: dark) {
