@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import DragHandle from './DragHandle';
 
 interface ResizerProps {
   direction: 'horizontal' | 'vertical';
@@ -48,24 +49,13 @@ const Resizer: React.FC<ResizerProps> = ({ direction, onResize, className = '' }
     <div
       onPointerDown={handlePointerDown}
       className={`
-        relative z-30 group transition-colors duration-300
-        ${direction === 'horizontal' ? 'w-1 cursor-col-resize h-full' : 'h-1 cursor-row-resize w-full'}
-        ${isDragging ? 'bg-[var(--theme-primary)]/20' : 'hover:bg-[var(--theme-primary)]/10'}
+        relative z-30 group transition-colors duration-300 flex items-center justify-center
+        ${direction === 'horizontal' ? 'w-2 cursor-col-resize h-full' : 'h-2 cursor-row-resize w-full'}
+        ${isDragging ? 'bg-[var(--theme-primary)]/10' : 'hover:bg-[var(--theme-primary)]/5'}
         ${className}
       `}
     >
-      {/* Thumb hint */}
-      <div className={`
-        absolute inset-0 flex items-center justify-center pointer-events-none
-      `}>
-        <div className={`
-          bg-[var(--theme-primary)] rounded-full transition-all duration-300
-          ${direction === 'horizontal' ? 'w-0.5 h-8' : 'h-0.5 w-8'}
-          ${isDragging 
-            ? 'opacity-100 scale-y-125' 
-            : 'opacity-30 group-hover:opacity-100 group-hover:scale-y-110'}
-        `} />
-      </div>
+      <DragHandle direction={direction} />
     </div>
   );
 };
