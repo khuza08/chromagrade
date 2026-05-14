@@ -1,8 +1,12 @@
 import React, { useMemo } from 'react';
 import { BarChart2, Activity, Target } from 'lucide-react';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../../store/store';
+import EmptyStateOverlay from '../ui/EmptyStateOverlay';
 
 const RightSidebar: React.FC = () => {
   const width = 'var(--right-sidebar-width)';
+  const hasImage = useSelector((state: RootState) => Boolean(state.image.originalUrl), (a, b) => a === b);
 
   // Memoize the random heights so they don't jitter during resize re-renders
   const histogramData = useMemo(() => 
@@ -11,9 +15,11 @@ const RightSidebar: React.FC = () => {
 
   return (
     <div 
-      className="bg-[var(--bg-panel)] border-[var(--border)] flex flex-col transition-all duration-300 overflow-hidden"
+      className="relative bg-[var(--bg-panel)] border-[var(--border)] flex flex-col transition-all duration-300 overflow-hidden"
       style={{ width }}
+      {...(!hasImage ? { inert: "true" } : {})}
     >
+      <EmptyStateOverlay />
       <div className="p-4 border-b border-[var(--border)] flex items-center justify-between">
         <h2 className="text-[11px] uppercase tracking-widest font-bold text-[var(--text-secondary)] hidden lg:block">
           Scopes

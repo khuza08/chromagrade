@@ -1,11 +1,19 @@
 import React from 'react';
 import { Layers, Image, History, Bookmark } from 'lucide-react';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../../store/store';
+import EmptyStateOverlay from '../ui/EmptyStateOverlay';
+
 const LeftSidebar: React.FC = () => {
+  const hasImage = useSelector((state: RootState) => Boolean(state.image.originalUrl), (a, b) => a === b);
+
   return (
     <div 
-      className="bg-[var(--bg-panel)] border-[var(--border)] flex flex-col transition-all duration-300 overflow-hidden"
+      className="relative bg-[var(--bg-panel)] border-[var(--border)] flex flex-col transition-all duration-300 overflow-hidden"
       style={{ width: 'var(--left-sidebar-width)' }}
+      {...(!hasImage ? { inert: "true" } : {})}
     >
+      <EmptyStateOverlay />
       <div className="flex-1 overflow-y-auto">
         <section className="p-4 border-b border-[var(--border)]">
           <div className="flex items-center gap-2 mb-4">

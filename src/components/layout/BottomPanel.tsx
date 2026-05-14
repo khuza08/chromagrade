@@ -6,6 +6,7 @@ import { Circle, Activity, Pipette, Palette, Sparkles, Map } from 'lucide-react'
 import WheelsPanel from '../panels/WheelsPanel';
 import CurvesPanel from '../panels/CurvesPanel';
 import HSLPanel from '../panels/HSLPanel';
+import EmptyStateOverlay from '../ui/EmptyStateOverlay';
 
 const tabs = [
   { id: 'wheels', label: 'Wheels', icon: Circle },
@@ -19,12 +20,15 @@ const tabs = [
 const BottomPanel: React.FC = () => {
   const dispatch = useDispatch();
   const activeTab = useSelector((state: RootState) => state.ui.activeBottomTab);
+  const hasImage = useSelector((state: RootState) => Boolean(state.image.originalUrl), (a, b) => a === b);
 
   return (
     <div 
-      className="bg-[var(--bg-panel)] border-[var(--border)] flex flex-col"
+      className="relative bg-[var(--bg-panel)] border-[var(--border)] flex flex-col"
       style={{ height: 'var(--bottom-panel-height)' }}
+      {...(!hasImage ? { inert: "true" } : {})}
     >
+      <EmptyStateOverlay />
       <div className="flex bg-[var(--bg-base)] px-2">
         {tabs.map((tab) => {
           const Icon = tab.icon;

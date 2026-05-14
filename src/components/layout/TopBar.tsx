@@ -10,6 +10,7 @@ const TopBar: React.FC = () => {
   const dispatch = useDispatch();
   const { past, future } = useSelector((state: RootState) => state.history);
   const currentGrading = useSelector((state: RootState) => state.grading);
+  const hasImage = useSelector((state: RootState) => Boolean(state.image.originalUrl));
 
   const handleUndo = () => {
     if (past.length > 0) {
@@ -46,7 +47,7 @@ const TopBar: React.FC = () => {
       <div className="flex items-center gap-2">
         <button 
           onClick={handleUndo}
-          disabled={past.length === 0}
+          disabled={past.length === 0 || !hasImage}
           className="p-1.5 hover:bg-[var(--bg-hover)] rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           title="Undo (Ctrl+Z)"
         >
@@ -54,7 +55,7 @@ const TopBar: React.FC = () => {
         </button>
         <button 
           onClick={handleRedo}
-          disabled={future.length === 0}
+          disabled={future.length === 0 || !hasImage}
           className="p-1.5 hover:bg-[var(--bg-hover)] rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           title="Redo (Ctrl+Y)"
         >
@@ -63,7 +64,8 @@ const TopBar: React.FC = () => {
         <div className="w-[1px] h-4 bg-[var(--border)] mx-1" />
         <button 
           onClick={handleReset}
-          className="flex items-center gap-1.5 px-3 py-1 hover:bg-[var(--bg-hover)] rounded text-xs font-medium text-[var(--text-secondary)] transition-colors"
+          disabled={!hasImage}
+          className="flex items-center gap-1.5 px-3 py-1 hover:bg-[var(--bg-hover)] rounded text-xs font-medium text-[var(--text-secondary)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
         >
           <RotateCcw size={14} />
           Reset
@@ -73,7 +75,8 @@ const TopBar: React.FC = () => {
       <div className="flex items-center">
         <button 
           onClick={() => dispatch(setExportModalOpen(true))}
-          className="flex items-center gap-2 bg-[var(--theme-primary)] hover:opacity-90 active:scale-95 text-white px-4 py-1.5 rounded text-xs font-semibold transition-all shadow-lg shadow-black/20"
+          disabled={!hasImage}
+          className="flex items-center gap-2 bg-[var(--theme-primary)] hover:opacity-90 active:scale-95 text-white px-4 py-1.5 rounded text-xs font-semibold transition-all shadow-lg shadow-black/20 disabled:opacity-30 disabled:cursor-not-allowed disabled:scale-100"
         >
           <Download size={14} />
           Export
