@@ -1,10 +1,15 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { BarChart2, Activity, Target } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store/store';
 
 const RightSidebar: React.FC = () => {
   const width = useSelector((state: RootState) => state.ui.rightSidebarWidth);
+
+  // Memoize the random heights so they don't jitter during resize re-renders
+  const histogramData = useMemo(() => 
+    [...Array(32)].map(() => Math.random() * 100), 
+  []);
 
   return (
     <div 
@@ -28,11 +33,11 @@ const RightSidebar: React.FC = () => {
             <BarChart2 size={12} className="text-[var(--text-secondary)]" />
           </div>
           <div className="h-32 bg-[var(--bg-control)] rounded border border-[var(--border)] flex items-end p-1 gap-[1px]">
-            {[...Array(32)].map((_, i) => (
+            {histogramData.map((height, i) => (
               <div 
                 key={i} 
                 className="flex-1 bg-gradient-to-t from-gray-600 to-gray-400 opacity-50" 
-                style={{ height: `${Math.random() * 100}%` }}
+                style={{ height: `${height}%` }}
               />
             ))}
           </div>
