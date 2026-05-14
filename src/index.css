@@ -29,7 +29,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg-base: #000000;
+    --bg-base: #1C1C1E;
     --bg-panel: #282828;
     --bg-control: #2C2C2E;
     --bg-hover: #3A3A3C;
