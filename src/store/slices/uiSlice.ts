@@ -2,6 +2,19 @@ import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { HSLState } from './gradingSlice';
 
+const STORAGE_KEY = 'chromagrade_layout';
+
+const loadLayout = () => {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved ? JSON.parse(saved) : null;
+  } catch {
+    return null;
+  }
+};
+
+const savedLayout = loadLayout();
+
 interface UIState {
   activeBottomTab: 'wheels' | 'curves' | 'hsl' | 'lut' | 'ai' | 'presets';
   zoom: number;
@@ -14,6 +27,9 @@ interface UIState {
   hslWeights: Record<string, number>;
   hslViewMode: 'hsl' | 'color';
   activeColorBin: keyof HSLState;
+  leftSidebarWidth: number;
+  rightSidebarWidth: number;
+  bottomPanelHeight: number;
 }
 
 const initialState: UIState = {
@@ -28,6 +44,17 @@ const initialState: UIState = {
   hslWeights: {},
   hslViewMode: 'hsl',
   activeColorBin: 'red',
+  leftSidebarWidth: savedLayout?.leftSidebarWidth ?? 256,
+  rightSidebarWidth: savedLayout?.rightSidebarWidth ?? 256,
+  bottomPanelHeight: savedLayout?.bottomPanelHeight ?? 320,
+};
+
+const saveLayout = (state: UIState) => {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify({
+    leftSidebarWidth: state.leftSidebarWidth,
+    rightSidebarWidth: state.rightSidebarWidth,
+    bottomPanelHeight: state.bottomPanelHeight,
+  }));
 };
 
 export const uiSlice = createSlice({
@@ -68,6 +95,18 @@ export const uiSlice = createSlice({
     setActiveColorBin: (state, action: PayloadAction<UIState['activeColorBin']>) => {
       state.activeColorBin = action.payload;
     },
+    setLeftSidebarWidth: (state, action: PayloadAction<number>) => {
+      state.leftSidebarWidth = action.payload;
+      saveLayout(state);
+    },
+    setRightSidebarWidth: (state, action: PayloadAction<number>) => {
+      state.rightSidebarWidth = action.payload;
+      saveLayout(state);
+    },
+    setBottomPanelHeight: (state, action: PayloadAction<number>) => {
+      state.bottomPanelHeight = action.payload;
+      saveLayout(state);
+    },
   },
 });
 
@@ -82,7 +121,11 @@ export const {
   setHslTargetActive,
   setHslWeights,
   setHslViewMode,
-  setActiveColorBin
+  setActiveColorBin,
+  setLeftSidebarWidth,
+  setRightSidebarWidth,
+  setBottomPanelHeight
 } = uiSlice.actions;
 
 export default uiSlice.reducer;
+

@@ -1,9 +1,16 @@
 import React from 'react';
 import { BarChart2, Activity, Target } from 'lucide-react';
+import { useSelector } from 'react-redux';
+import type { RootState } from '../../store/store';
 
 const RightSidebar: React.FC = () => {
+  const width = useSelector((state: RootState) => state.ui.rightSidebarWidth);
+
   return (
-    <div className="w-14 lg:w-64 bg-[var(--bg-panel)] border-l border-[var(--border)] flex flex-col transition-all duration-300 overflow-hidden">
+    <div 
+      className="bg-[var(--bg-panel)] border-[var(--border)] flex flex-col transition-all duration-300 overflow-hidden"
+      style={{ width: `${width}px` }}
+    >
       <div className="p-4 border-b border-[var(--border)] flex items-center justify-between">
         <h2 className="text-[11px] uppercase tracking-widest font-bold text-[var(--text-secondary)] hidden lg:block">
           Scopes
