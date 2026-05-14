@@ -19,12 +19,11 @@ const tabs = [
 const BottomPanel: React.FC = () => {
   const dispatch = useDispatch();
   const activeTab = useSelector((state: RootState) => state.ui.activeBottomTab);
-  const height = useSelector((state: RootState) => state.ui.bottomPanelHeight);
 
   return (
     <div 
       className="bg-[var(--bg-panel)] border-[var(--border)] flex flex-col"
-      style={{ height: `${height}px` }}
+      style={{ height: 'var(--bottom-panel-height)' }}
     >
       <div className="flex bg-[var(--bg-base)] px-2">
         {tabs.map((tab) => {

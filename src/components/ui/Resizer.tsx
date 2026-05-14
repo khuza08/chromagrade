@@ -1,32 +1,44 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import DragHandle from './DragHandle';
 
 interface ResizerProps {
   direction: 'horizontal' | 'vertical';
   onResize: (delta: number) => void;
+  onResizeEnd?: () => void;
   className?: string;
 }
 
-const Resizer: React.FC<ResizerProps> = ({ direction, onResize, className = '' }) => {
-  const [isDragging, setIsDragging] = useState(false);
+const Resizer: React.FC<ResizerProps> = ({ direction, onResize, onResizeEnd, className = '' }) => {
+  const [isActive, setIsActive] = useState(false);
+  const isDragging = useRef(false);
 
   const handlePointerDown = (e: React.PointerEvent) => {
     e.preventDefault();
-    setIsDragging(true);
+    isDragging.current = false;
+    setIsActive(true);
   };
 
   const handlePointerMove = useCallback((e: PointerEvent) => {
-    if (!isDragging) return;
-    const delta = direction === 'horizontal' ? e.movementX : e.movementY;
-    onResize(delta);
-  }, [isDragging, direction, onResize]);
+    if (!isDragging.current && e.buttons === 1) {
+      isDragging.current = true;
+    }
+    
+    if (isDragging.current) {
+      const delta = direction === 'horizontal' ? e.movementX : e.movementY;
+      onResize(delta);
+    }
+  }, [direction, onResize]);
 
   const handlePointerUp = useCallback(() => {
-    setIsDragging(false);
-  }, []);
+    if (isDragging.current) {
+      onResizeEnd?.();
+    }
+    isDragging.current = false;
+    setIsActive(false);
+  }, [onResizeEnd]);
 
   useEffect(() => {
-    if (isDragging) {
+    if (isActive) {
       window.addEventListener('pointermove', handlePointerMove);
       window.addEventListener('pointerup', handlePointerUp);
       document.body.style.cursor = direction === 'horizontal' ? 'col-resize' : 'row-resize';
@@ -43,7 +55,7 @@ const Resizer: React.FC<ResizerProps> = ({ direction, onResize, className = '' }
       document.body.style.cursor = '';
       document.body.style.userSelect = '';
     };
-  }, [isDragging, handlePointerMove, handlePointerUp, direction]);
+  }, [isActive, handlePointerMove, handlePointerUp, direction]);
 
   return (
     <div
@@ -51,9 +63,10 @@ const Resizer: React.FC<ResizerProps> = ({ direction, onResize, className = '' }
       className={`
         relative z-30 group transition-colors duration-300 flex items-center justify-center
         ${direction === 'horizontal' ? 'w-2 cursor-col-resize h-full' : 'h-2 cursor-row-resize w-full'}
-        ${isDragging ? 'bg-[var(--theme-primary)]/10' : 'hover:bg-[var(--theme-primary)]/5'}
+        ${isActive ? 'bg-[var(--theme-primary)]/10' : 'hover:bg-[var(--theme-primary)]/5'}
         ${className}
       `}
+      style={{ touchAction: 'none' }}
     >
       <DragHandle direction={direction} />
     </div>

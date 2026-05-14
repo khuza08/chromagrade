@@ -5,6 +5,7 @@ import imageReducer from './slices/imageSlice';
 import uiReducer from './slices/uiSlice';
 import exportReducer from './slices/exportSlice';
 import { historyMiddleware } from './middleware/historyMiddleware';
+import { persistMiddleware } from './middleware/persistMiddleware';
 
 export const store = configureStore({
   reducer: {
@@ -15,7 +16,7 @@ export const store = configureStore({
     export: exportReducer,
   },
   middleware: (getDefaultMiddleware) =>
-    getDefaultMiddleware().concat(historyMiddleware),
+    getDefaultMiddleware().concat(historyMiddleware, persistMiddleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

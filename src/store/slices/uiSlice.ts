@@ -49,13 +49,6 @@ const initialState: UIState = {
   bottomPanelHeight: savedLayout?.bottomPanelHeight ?? 320,
 };
 
-const saveLayout = (state: UIState) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify({
-    leftSidebarWidth: state.leftSidebarWidth,
-    rightSidebarWidth: state.rightSidebarWidth,
-    bottomPanelHeight: state.bottomPanelHeight,
-  }));
-};
 
 export const uiSlice = createSlice({
   name: 'ui',
@@ -97,15 +90,12 @@ export const uiSlice = createSlice({
     },
     setLeftSidebarWidth: (state, action: PayloadAction<number>) => {
       state.leftSidebarWidth = action.payload;
-      saveLayout(state);
     },
     setRightSidebarWidth: (state, action: PayloadAction<number>) => {
       state.rightSidebarWidth = action.payload;
-      saveLayout(state);
     },
     setBottomPanelHeight: (state, action: PayloadAction<number>) => {
       state.bottomPanelHeight = action.payload;
-      saveLayout(state);
     },
   },
 });

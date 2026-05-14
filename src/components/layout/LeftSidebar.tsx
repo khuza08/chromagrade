@@ -1,15 +1,10 @@
 import React from 'react';
 import { Layers, Image, History, Bookmark } from 'lucide-react';
-import { useSelector } from 'react-redux';
-import type { RootState } from '../../store/store';
-
 const LeftSidebar: React.FC = () => {
-  const width = useSelector((state: RootState) => state.ui.leftSidebarWidth);
-
   return (
     <div 
       className="bg-[var(--bg-panel)] border-[var(--border)] flex flex-col transition-all duration-300 overflow-hidden"
-      style={{ width: `${width}px` }}
+      style={{ width: 'var(--left-sidebar-width)' }}
     >
       <div className="flex-1 overflow-y-auto">
         <section className="p-4 border-b border-[var(--border)]">
