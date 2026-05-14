@@ -59,13 +59,13 @@ const PerformanceSlider: React.FC<PerformanceSliderProps> = ({
           {onReset && (
             <button 
               onClick={onReset}
-              className="opacity-0 group-hover:opacity-100 p-0.5 hover:text-[var(--accent-blue)] text-[var(--text-tertiary)] transition-all cursor-pointer"
+              className="opacity-0 group-hover:opacity-100 p-0.5 hover:text-[var(--theme-primary)] text-[var(--text-tertiary)] transition-all cursor-pointer"
               title="Reset"
             >
               <RotateCcw size={10} />
             </button>
           )}
-          <span className="text-[10px] font-mono text-[var(--accent-blue)] bg-[var(--bg-control)] px-1.5 py-0.5 rounded min-w-[32px] text-center">
+          <span className="text-[10px] font-mono text-[var(--theme-primary)] bg-[var(--bg-control)] px-1.5 py-0.5 rounded min-w-[32px] text-center">
             {localValue > 0 ? `+${localValue}` : localValue}
           </span>
         </div>
@@ -79,7 +79,7 @@ const PerformanceSlider: React.FC<PerformanceSliderProps> = ({
         onChange={handleDrag}
         onMouseUp={handleRelease}
         onTouchEnd={handleRelease}
-        className="w-full h-1 bg-[var(--bg-control)] rounded-lg appearance-none cursor-pointer accent-[var(--accent-blue)] hover:accent-blue-400 transition-all"
+        className="w-full h-1 bg-[var(--bg-control)] rounded-lg appearance-none cursor-pointer accent-[var(--theme-primary)] transition-all"
       />
     </div>
   );

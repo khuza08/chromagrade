@@ -281,7 +281,7 @@ const CanvasViewer: React.FC = () => {
               <span className="text-[10px] font-mono text-[var(--theme-primary)] min-w-[32px] text-center">{Math.round(zoom * 100)}%</span>
               <button 
                 onClick={resetZoom}
-                className="hover:text-[var(--accent-blue)] text-[var(--text-secondary)] transition-colors cursor-pointer"
+                className="hover:text-[var(--theme-primary)] text-[var(--text-secondary)] transition-all cursor-pointer"
                 title="Reset zoom"
               >
                 <RotateCcw size={10} />
@@ -301,7 +301,7 @@ const CanvasViewer: React.FC = () => {
             </button>
             <button 
               onClick={toggleFullscreen}
-              className={`p-2 bg-[var(--bg-panel)]/20 hover:bg-[var(--bg-panel)]/20 rounded-lg safari-blur transition-all border border-[var(--border)] ${isFullscreen ? 'text-[var(--accent-blue)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
+              className={`p-2 bg-[var(--bg-panel)]/20 hover:bg-[var(--bg-panel)]/20 rounded-lg safari-blur transition-all border border-[var(--border)] ${isFullscreen ? 'text-[var(--theme-primary)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
             >
               <Maximize size={18} />
             </button>

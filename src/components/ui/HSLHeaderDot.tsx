@@ -31,7 +31,7 @@ const HSLHeaderDot: React.FC<HSLHeaderDotProps> = ({ attribute, label }) => {
       onClick={handleClick}
       className={`flex items-center gap-2 px-3 py-1.5 rounded-md transition-all border ${
         isActive
-          ? 'bg-[var(--accent-blue)] border-[var(--accent-blue)] text-white'
+          ? 'bg-[var(--theme-primary)] border-[var(--theme-primary)] text-white'
           : 'bg-[var(--bg-base)] border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)]'
       }`}
       title={`Targeted Adjustment: ${label}`}

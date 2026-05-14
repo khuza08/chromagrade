@@ -152,7 +152,7 @@ const ColorWheel: React.FC<ColorWheelProps> = ({ label, value, onChange, onReset
             cy={svgSize / 2}
             r={circleR}
             fill="none"
-            stroke="var(--accent-blue)"
+            stroke="var(--theme-primary)"
             strokeWidth={strokeWidth}
             strokeDasharray={circumference}
             strokeDashoffset={dashOffset}
@@ -164,7 +164,7 @@ const ColorWheel: React.FC<ColorWheelProps> = ({ label, value, onChange, onReset
         {/* Luma Thumb */}
         <div
           className={`absolute w-3 h-3 rounded-full border-2 border-white shadow-md transition-transform duration-75 z-20
-            ${(activeControl === 'ring' || activeControl === 'thumb') ? 'bg-[var(--accent-blue)] scale-125' : 'bg-[var(--bg-control)]'}`}
+            ${(activeControl === 'ring' || activeControl === 'thumb') ? 'bg-[var(--theme-primary)] scale-125' : 'bg-[var(--bg-control)]'}`}
           style={{
             left: thumbLeft,
             top: thumbTop,
@@ -184,7 +184,7 @@ const ColorWheel: React.FC<ColorWheelProps> = ({ label, value, onChange, onReset
           className={`absolute w-4 h-4 rounded-full border-2 shadow-lg transition-transform duration-75 pointer-events-none
             ${isSnapped
               ? 'border-[var(--text-tertiary)] bg-transparent'
-              : 'border-white bg-[var(--accent-blue)] shadow-[0_0_15px_var(--accent-blue)]'}`}
+              : 'border-white bg-[var(--theme-primary)] shadow-[0_0_15px_var(--theme-primary)]'}`}
           style={{
             left: `${(value.x + 1) * 50}%`,
             top: `${(value.y + 1) * 50}%`,
@@ -194,7 +194,7 @@ const ColorWheel: React.FC<ColorWheelProps> = ({ label, value, onChange, onReset
 
         {/* Luma Value Tooltip */}
         {isDragging && (activeControl === 'ring' || activeControl === 'thumb') && (
-          <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-[var(--bg-panel)] border border-[var(--border)] px-2 py-1 rounded text-[9px] font-mono text-[var(--accent-blue)] shadow-xl z-30">
+          <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-[var(--bg-panel)] border border-[var(--border)] px-2 py-1 rounded text-[9px] font-mono text-[var(--theme-primary)] shadow-xl z-30">
             LUMA: {value.luma.toFixed(2)}
           </div>
         )}

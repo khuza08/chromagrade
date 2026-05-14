@@ -58,7 +58,7 @@ const ExportModal: React.FC = () => {
               {(['jpg', 'png', 'gif'] as ExportFormat[]).map((f) => (
                 <label
                   key={f}
-                  className={`relative flex flex-col items-center gap-2 p-4 rounded-2xl border-2 cursor-pointer transition-all ${format === f ? 'border-[var(--accent-blue)] bg-[var(--accent-blue)]/10 shadow-lg shadow-blue-900/10' : 'border-[var(--border)] hover:border-[var(--text-tertiary)]'}`}
+                  className={`relative flex flex-col items-center gap-2 p-4 rounded-2xl border-2 cursor-pointer transition-all ${format === f ? 'border-[var(--theme-primary)] bg-[var(--theme-primary)]/10 shadow-lg shadow-black/10' : 'border-[var(--border)] hover:border-[var(--text-tertiary)]'}`}
                 >
                   <input
                     type="radio"
@@ -68,7 +68,7 @@ const ExportModal: React.FC = () => {
                     onChange={handleFormatChange}
                     className="absolute inset-0 opacity-0 cursor-pointer"
                   />
-                  <span className={`text-lg font-bold ${format === f ? 'text-[var(--accent-blue)]' : 'text-[var(--text-secondary)]'}`}>
+                  <span className={`text-lg font-bold ${format === f ? 'text-[var(--theme-primary)]' : 'text-[var(--text-secondary)]'}`}>
                     {f.toUpperCase()}
                   </span>
                   <span className="text-[10px] uppercase font-bold tracking-tighter opacity-40">
@@ -79,8 +79,8 @@ const ExportModal: React.FC = () => {
             </div>
           </div>
 
-          <div className="p-4 rounded-xl bg-[var(--accent-blue)]/5 border border-[var(--accent-blue)]/10">
-            <p className="text-xs text-[var(--accent-blue)]/80 leading-relaxed">
+          <div className="p-4 rounded-xl bg-[var(--theme-primary)]/5 border border-[var(--theme-primary)]/10">
+            <p className="text-xs text-[var(--theme-primary)]/80 leading-relaxed">
               Exporting will apply all your grading adjustments to the original high-resolution image using our 32-bit WebGL engine.
             </p>
           </div>
@@ -95,7 +95,7 @@ const ExportModal: React.FC = () => {
           </button>
           <button
             onClick={handleExport}
-            className="flex-[2] flex items-center justify-center gap-2 py-3 px-4 bg-[var(--accent-blue)] hover:opacity-90 text-white rounded-xl text-sm font-bold transition-all active:scale-95 shadow-lg shadow-blue-900/10"
+            className="flex-[2] flex items-center justify-center gap-2 py-3 px-4 bg-[var(--theme-primary)] hover:opacity-90 text-white rounded-xl text-sm font-bold transition-all active:scale-95 shadow-lg shadow-black/20"
           >
             <Download size={18} />
             Download Image

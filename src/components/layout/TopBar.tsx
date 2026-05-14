@@ -38,7 +38,7 @@ const TopBar: React.FC = () => {
         <button className="p-1 hover:bg-[var(--bg-hover)] rounded text-[var(--text-secondary)]">
           <Menu size={20} />
         </button>
-        <h1 className="text-sm font-bold tracking-tight bg-gradient-to-r from-[var(--theme-primary)] to-[var(--theme-light)] bg-clip-text text-transparent">
+        <h1 className="text-sm font-bold tracking-tight text-[var(--theme-primary)]">
           ChromaGrade
         </h1>
       </div>
