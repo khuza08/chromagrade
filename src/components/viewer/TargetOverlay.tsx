@@ -88,7 +88,7 @@ const TargetOverlay: React.FC = () => {
       onPointerLeave={handleMouseUp}
     >
       {!isDragging && (
-        <div className="bg-black/20 backdrop-blur-md border border-white/20 px-4 py-2 rounded-full pointer-events-none">
+        <div className="bg-black/20 safari-blur border border-white/20 px-4 py-2 rounded-full pointer-events-none">
           <span className="text-[14px] font-semibold text-white uppercase">
             Drag vertically on image to adjust {activeAttribute}
           </span>

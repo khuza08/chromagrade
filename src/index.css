@@ -80,4 +80,24 @@ body {
 @layer utilities {
   .hsl-toggle { @apply text-[10px] font-bold uppercase tracking-widest cursor-pointer transition-opacity; }
   .color-swatch { @apply w-[var(--swatch-size)] h-[var(--swatch-size)] rounded-full border border-white/10 cursor-pointer transition-all hover:scale-110 active:scale-95; }
+
+  /* 
+    Safari Backdrop Blur Fix
+    Tested with Tailwind CSS v4.0.0+
+    Safari requires -webkit-backdrop-filter prefix. 
+    This rule ensures all backdrop-blur-* utilities work on macOS/iOS.
+  */
+  [class*='backdrop-blur'] {
+    -webkit-backdrop-filter: var(--tw-backdrop-filter);
+    backdrop-filter: var(--tw-backdrop-filter);
+  }
+
+  /* Explicit Safari-compatible utility class */
+  .safari-blur {
+    -webkit-backdrop-filter: blur(12px) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    isolation: isolate;
+  }
 }

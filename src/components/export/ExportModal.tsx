@@ -39,7 +39,7 @@ const ExportModal: React.FC = () => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 safari-blur animate-in fade-in duration-200">
       <div className="bg-[var(--bg-panel)] border border-[var(--border)] rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
         <div className="p-6 border-b border-[var(--border)] flex items-center justify-between">
           <h2 className="text-xl font-bold tracking-tight">Export Masterpiece</h2>

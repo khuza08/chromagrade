@@ -259,7 +259,7 @@ const CanvasViewer: React.FC = () => {
       {originalUrl && (
         <>
           <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
-            <div className="flex items-center gap-2 px-2 py-1 bg-[var(--bg-panel)]/20 backdrop-blur-md rounded-lg border border-[var(--border)] mr-2 group/zoom">
+            <div className="flex items-center gap-2 px-2 py-1 bg-[var(--bg-panel)]/20 safari-blur rounded-lg border border-[var(--border)] mr-2 group/zoom">
               <span className="text-[10px] font-mono text-[var(--accent-blue)] min-w-[32px] text-center">{Math.round(zoom * 100)}%</span>
               <button 
                 onClick={resetZoom}
@@ -271,24 +271,24 @@ const CanvasViewer: React.FC = () => {
             </div>
             <button 
               onClick={() => handleZoom(0.2)}
-              className="p-2 bg-[var(--bg-panel)]/20 hover:bg-[var(--bg-panel)]/20 rounded-lg backdrop-blur-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all border border-[var(--border)]"
+              className="p-2 bg-[var(--bg-panel)]/20 hover:bg-[var(--bg-panel)]/20 rounded-lg safari-blur text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all border border-[var(--border)]"
             >
               <ZoomIn size={18} />
             </button>
             <button 
               onClick={() => handleZoom(-0.2)}
-              className="p-2 bg-[var(--bg-panel)]/20 hover:bg-[var(--bg-panel)]/20 rounded-lg backdrop-blur-md text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all border border-[var(--border)]"
+              className="p-2 bg-[var(--bg-panel)]/20 hover:bg-[var(--bg-panel)]/20 rounded-lg safari-blur text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all border border-[var(--border)]"
             >
               <ZoomOut size={18} />
             </button>
             <button 
               onClick={toggleFullscreen}
-              className={`p-2 bg-[var(--bg-panel)]/20 hover:bg-[var(--bg-panel)]/20 rounded-lg backdrop-blur-md transition-all border border-[var(--border)] ${isFullscreen ? 'text-[var(--accent-blue)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
+              className={`p-2 bg-[var(--bg-panel)]/20 hover:bg-[var(--bg-panel)]/20 rounded-lg safari-blur transition-all border border-[var(--border)] ${isFullscreen ? 'text-[var(--accent-blue)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
             >
               <Maximize size={18} />
             </button>
           </div>
-          <div className="absolute bottom-4 left-4 px-3 py-1.5 bg-[var(--bg-panel)]/20 backdrop-blur-md rounded-md text-[10px] font-mono text-[var(--text-tertiary)] tracking-wider uppercase border border-[var(--border)] z-20 flex gap-3">
+          <div className="absolute bottom-4 left-4 px-3 py-1.5 bg-[var(--bg-panel)]/20 safari-blur rounded-md text-[10px] font-mono text-[var(--text-tertiary)] tracking-wider uppercase border border-[var(--border)] z-20 flex gap-3">
             <span>
               {dimensions ? (
                 dimensions.width >= 3840 ? '4K' :
