@@ -6,13 +6,15 @@ interface ResizerProps {
   onResize: (delta: number) => void;
   onResizeEnd?: () => void;
   className?: string;
+  disabled?: boolean;
 }
 
-const Resizer: React.FC<ResizerProps> = ({ direction, onResize, onResizeEnd, className = '' }) => {
+const Resizer: React.FC<ResizerProps> = ({ direction, onResize, onResizeEnd, className = '', disabled = false }) => {
   const [isActive, setIsActive] = useState(false);
   const isDragging = useRef(false);
 
   const handlePointerDown = (e: React.PointerEvent) => {
+    if (disabled) return;
     e.preventDefault();
     isDragging.current = false;
     setIsActive(true);
@@ -62,8 +64,8 @@ const Resizer: React.FC<ResizerProps> = ({ direction, onResize, onResizeEnd, cla
       onPointerDown={handlePointerDown}
       className={`
         relative z-30 group transition-colors duration-300 flex items-center justify-center
-        ${direction === 'horizontal' ? 'w-2 cursor-col-resize h-full' : 'h-2 cursor-row-resize w-full'}
-        ${isActive ? 'bg-[var(--theme-primary)]/10' : 'hover:bg-[var(--theme-primary)]/5'}
+        ${direction === 'horizontal' ? `w-2 h-full ${disabled ? '' : 'cursor-col-resize'}` : `h-2 w-full ${disabled ? '' : 'cursor-row-resize'}`}
+        ${isActive ? 'bg-[var(--theme-primary)]/10' : (disabled ? '' : 'hover:bg-[var(--theme-primary)]/5')}
         ${className}
       `}
       style={{ touchAction: 'none' }}

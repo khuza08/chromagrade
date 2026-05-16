@@ -26,6 +26,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const initialLeft = useSelector((state: RootState) => state.ui.leftSidebarWidth);
   const initialRight = useSelector((state: RootState) => state.ui.rightSidebarWidth);
   const initialBottom = useSelector((state: RootState) => state.ui.bottomPanelHeight);
+  const hasImage = useSelector((state: RootState) => Boolean(state.image.originalUrl));
 
   const leftWidthRef = useRef(initialLeft);
   const rightWidthRef = useRef(initialRight);
@@ -81,6 +82,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           onResize={handleLeftResize} 
           onResizeEnd={handleLeftResizeEnd}
           className="border-r border-[var(--border)]" 
+          disabled={!hasImage}
         />
         
         <main className="flex-1 flex flex-col relative overflow-hidden bg-black/20">
@@ -92,6 +94,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
             onResize={handleBottomResize} 
             onResizeEnd={handleBottomResizeEnd}
             className="border-t border-[var(--border)]" 
+            disabled={!hasImage}
           />
           <BottomPanel />
         </main>
@@ -101,6 +104,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           onResize={handleRightResize} 
           onResizeEnd={handleRightResizeEnd}
           className="border-l border-[var(--border)]" 
+          disabled={!hasImage}
         />
         <RightSidebar />
       </div>
