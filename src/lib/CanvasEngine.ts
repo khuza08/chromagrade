@@ -291,6 +291,14 @@ export class CanvasEngine {
     this._needsRender = false;
 
     const gl = this.gl;
+    
+    // Always ensure viewport matches the internal canvas resolution
+    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
+    
+    // Clear buffer to prevent ghosting
+    gl.clearColor(0, 0, 0, 0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+
     gl.useProgram(this.program);
 
     // Bind Attributes
@@ -444,8 +452,10 @@ export class CanvasEngine {
   }
 
   public resize(width: number, height: number) {
+    // Note: We don't change gl.viewport here because the canvas internal resolution 
+    // is fixed to the image proxy size. CSS object-contain handles display scaling.
+    // We just flag a render if needed.
     if (this.gl && this.targetCanvas) {
-      this.gl.viewport(0, 0, width, height);
       this._needsRender = true;
     }
   }
