@@ -17,7 +17,7 @@ const RightSidebar: React.FC = () => {
     <div 
       className="relative bg-[var(--bg-panel)] border-[var(--border)] flex flex-col transition-all duration-300 overflow-hidden"
       style={{ width }}
-      {...(!hasImage ? { inert: "true" } : {})}
+      {...(!hasImage ? { inert: true } : {})}
     >
       <EmptyStateOverlay />
       <div className="p-4 border-b border-[var(--border)] flex items-center justify-between">

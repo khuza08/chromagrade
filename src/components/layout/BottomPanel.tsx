@@ -26,7 +26,7 @@ const BottomPanel: React.FC = () => {
     <div 
       className="relative bg-[var(--bg-panel)] border-[var(--border)] flex flex-col"
       style={{ height: 'var(--bottom-panel-height)' }}
-      {...(!hasImage ? { inert: "true" } : {})}
+      {...(!hasImage ? { inert: true } : {})}
     >
       <EmptyStateOverlay />
       <div className="flex bg-[var(--bg-base)] px-2">

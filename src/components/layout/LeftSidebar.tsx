@@ -11,7 +11,7 @@ const LeftSidebar: React.FC = () => {
     <div 
       className="relative bg-[var(--bg-panel)] border-[var(--border)] flex flex-col transition-all duration-300 overflow-hidden"
       style={{ width: 'var(--left-sidebar-width)' }}
-      {...(!hasImage ? { inert: "true" } : {})}
+      {...(!hasImage ? { inert: true } : {})}
     >
       <EmptyStateOverlay />
       <div className="flex-1 overflow-y-auto">
