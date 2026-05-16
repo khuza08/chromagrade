@@ -1,17 +1,13 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { BarChart2, Activity, Target } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store/store';
 import EmptyStateOverlay from '../ui/EmptyStateOverlay';
+import Histogram from '../ui/Histogram';
 
 const RightSidebar: React.FC = () => {
   const width = 'var(--right-sidebar-width)';
   const hasImage = useSelector((state: RootState) => Boolean(state.image.originalUrl), (a, b) => a === b);
-
-  // Memoize the random heights so they don't jitter during resize re-renders
-  const histogramData = useMemo(() => 
-    [...Array(32)].map(() => Math.random() * 100), 
-  []);
 
   return (
     <div 
@@ -33,18 +29,10 @@ const RightSidebar: React.FC = () => {
       <div className="flex-1 overflow-y-auto p-4 space-y-6">
         <div className="space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] text-[var(--text-secondary)] font-medium">Histogram</span>
+            <span className="text-[10px] text-[var(--text-secondary)] font-medium uppercase tracking-wider">Histogram</span>
             <BarChart2 size={12} className="text-[var(--text-secondary)]" />
           </div>
-          <div className="h-32 bg-[var(--bg-control)] rounded border border-[var(--border)] flex items-end p-1 gap-[1px]">
-            {histogramData.map((height, i) => (
-              <div 
-                key={i} 
-                className="flex-1 bg-gradient-to-t from-gray-600 to-gray-400 opacity-50" 
-                style={{ height: `${height}%` }}
-              />
-            ))}
-          </div>
+          <Histogram />
         </div>
 
         <div className="space-y-2">

@@ -4,6 +4,10 @@ import { fragmentShaderSource } from './shaders/fragment.glsl';
 import { compileShader, createProgram } from './shaders/compileShader';
 import { getMonotoneCubicSpline } from './math/spline';
 import { mapHueToBins } from './hsl/targetTool';
+import HistogramWorker from '../workers/histogramWorker?worker';
+import { setHistogramData } from '../store/slices/histogramSlice';
+import { store } from '../store/store';
+import { throttle } from '../utils/throttle';
 
 export class CanvasEngine {
   private gl: WebGL2RenderingContext | null = null;
@@ -12,6 +16,8 @@ export class CanvasEngine {
   
   private _originalImage: HTMLImageElement | null = null;
   private _proxyTexture: WebGLTexture | null = null;
+  private _histogramProxyImageData: ImageData | null = null;
+  private _histogramWorker: Worker | null = null;
   
   // Curve LUT Textures
   private _curveTextures: Record<string, WebGLTexture> = {};
@@ -42,6 +48,75 @@ export class CanvasEngine {
     }
 
     this._initGL();
+    this._initHistogramWorker();
+  }
+
+  private _initHistogramWorker() {
+    this._histogramWorker = new HistogramWorker();
+    this._histogramWorker.onmessage = (e) => {
+      store.dispatch(setHistogramData(e.data));
+    };
+  }
+
+  private _dispatchToWorker = throttle((params: GradingState) => {
+    if (!this._histogramWorker || !this._histogramProxyImageData) return;
+
+    // Build params for worker mirroring the shader uniforms
+    const workerParams = {
+      contrast: (params.contrast + 100) / 100,
+      saturation: (params.saturation + 100) / 100,
+      temperature: params.temperature / 500,
+      tint: params.tint / 500,
+      shadows: this.cartesianToRGB(params.primary.shadows, 0.2),
+      midtones: {
+        r: Math.pow(2, (params.primary.midtones.luma - 1.0) + params.primary.midtones.x - params.primary.midtones.y / 2),
+        g: Math.pow(2, (params.primary.midtones.luma - 1.0) - params.primary.midtones.x / 2 - params.primary.midtones.y / 2),
+        b: Math.pow(2, (params.primary.midtones.luma - 1.0) - params.primary.midtones.x / 2 + params.primary.midtones.y),
+      },
+      highlights: {
+        r: params.primary.highlights.luma + params.primary.highlights.x - params.primary.highlights.y / 2,
+        g: params.primary.highlights.luma - params.primary.highlights.x / 2 - params.primary.highlights.y / 2,
+        b: params.primary.highlights.luma - params.primary.highlights.x / 2 + params.primary.highlights.y,
+      },
+      global: this.cartesianToRGB(params.primary.global, 0.5),
+      curves: {
+        master: this._getCurveLUT(params.curves.master),
+        red: this._getCurveLUT(params.curves.red),
+        green: this._getCurveLUT(params.curves.green),
+        blue: this._getCurveLUT(params.curves.blue),
+      },
+      hsl: {
+        hue: this._getHslLUT(params.hsl, 'h'),
+        sat: this._getHslLUT(params.hsl, 's'),
+        lum: this._getHslLUT(params.hsl, 'l'),
+      }
+    };
+
+    this._histogramWorker.postMessage({
+      type: 'PROCESS',
+      payload: { params: workerParams }
+    });
+  }, 100);
+
+  private _getCurveLUT(points: { x: number; y: number }[]): Uint8Array {
+    const lut = getMonotoneCubicSpline(points);
+    const data = new Uint8Array(256);
+    for (let i = 0; i < 256; i++) data[i] = Math.floor(lut[i] * 255.99);
+    return data;
+  }
+
+  private _getHslLUT(hsl: HSLState, attr: 'h' | 's' | 'l'): Uint8Array {
+    const data = new Uint8Array(256);
+    for (let x = 0; x < 256; x++) {
+      const hue = (x / 255) * 360;
+      const weights = mapHueToBins(hue);
+      let value = 0;
+      weights.forEach(w => {
+        value += hsl[w.bin as keyof HSLState][attr] * w.weight;
+      });
+      data[x] = Math.floor(((value + 1.0) / 2.0) * 255.99);
+    }
+    return data;
   }
 
   private _initGL() {
@@ -56,7 +131,8 @@ export class CanvasEngine {
       'u_texture', 'u_resolution', 'u_contrast', 'u_saturation', 
       'u_temperature', 'u_tint', 'u_shadows', 'u_midtones', 'u_highlights', 'u_global',
       'u_curveMaster', 'u_curveRed', 'u_curveGreen', 'u_curveBlue',
-      'u_hslHue', 'u_hslSat', 'u_hslLum'
+      'u_hslHue', 'u_hslSat', 'u_hslLum',
+      'u_showShadowClipping', 'u_showHighlightClipping'
     ];
     uniforms.forEach(name => {
       const location = gl.getUniformLocation(this.program!, name);
@@ -137,6 +213,22 @@ export class CanvasEngine {
         // Upload to GPU
         if (this._proxyTexture) this.gl?.deleteTexture(this._proxyTexture);
         this._proxyTexture = this._uploadTexture(proxyCanvas);
+
+        // Create Histogram Proxy (CPU side, downsampled)
+        const histSize = 256;
+        const histCanvas = document.createElement('canvas');
+        histCanvas.width = histSize;
+        histCanvas.height = histSize;
+        const histCtx = histCanvas.getContext('2d')!;
+        histCtx.drawImage(img, 0, 0, histSize, histSize);
+        this._histogramProxyImageData = histCtx.getImageData(0, 0, histSize, histSize);
+        
+        // Initial setup for worker using Transferable Objects
+        const buffer = this._histogramProxyImageData.data.buffer.slice(0); // Copy once to keep a main-thread copy if ever needed, or just transfer the original
+        this._histogramWorker?.postMessage({
+          type: 'SET_IMAGE',
+          payload: { imageData: new Uint8ClampedArray(buffer) }
+        }, [buffer]);
         
         // Update Target Canvas Size
         if (this.targetCanvas) {
@@ -281,8 +373,16 @@ export class CanvasEngine {
         gl.uniform1i(this._uniforms[uniform], 5 + index);
       }
     });
+    
+    // Clipping Toggles
+    const histState = store.getState().histogram;
+    gl.uniform1i(this._uniforms['u_showShadowClipping'], histState.showShadowClipping ? 1 : 0);
+    gl.uniform1i(this._uniforms['u_showHighlightClipping'], histState.showHighlightClipping ? 1 : 0);
 
     gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+    // Update Histogram Worker (Throttled)
+    this._dispatchToWorker(params);
   }
 
   public updateCurveTextures(curves: CurvesState) {
