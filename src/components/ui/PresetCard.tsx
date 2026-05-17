@@ -4,15 +4,20 @@ import { Trash2 } from 'lucide-react';
 
 interface PresetCardProps {
   preset: Preset;
-  onApply: () => void;
+  isSelected: boolean;
+  onClick: (e: React.MouseEvent) => void;
   onDelete?: () => void;
 }
 
-const PresetCard: React.FC<PresetCardProps> = ({ preset, onApply, onDelete }) => {
+const PresetCard: React.FC<PresetCardProps> = ({ preset, isSelected, onClick, onDelete }) => {
   return (
     <div 
-      className="relative group bg-[var(--bg-base)] hover:bg-[var(--bg-control)] border border-[var(--border)] hover:border-[var(--theme-primary)]/40 rounded-lg p-3.5 cursor-pointer transition-all flex flex-col justify-between h-[80px] w-full min-w-[120px] max-w-[160px] shadow-sm select-none"
-      onClick={onApply}
+      className={`relative group bg-[var(--bg-base)] hover:bg-[var(--bg-control)] border transition-all flex flex-col justify-between h-[80px] w-full min-w-[120px] max-w-[160px] shadow-sm select-none cursor-pointer rounded-lg p-3.5 ${
+        isSelected 
+          ? 'border-[var(--theme-primary)] bg-[var(--theme-primary)]/10 ring-1 ring-[var(--theme-primary)]' 
+          : 'border-[var(--border)] hover:border-[var(--theme-primary)]/40'
+      }`}
+      onClick={onClick}
     >
       <span className="text-[11px] font-bold text-[var(--text-primary)] leading-tight truncate pr-4">
         {preset.name}

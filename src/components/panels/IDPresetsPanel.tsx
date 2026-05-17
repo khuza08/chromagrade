@@ -65,6 +65,7 @@ const IDPresetsPanel: React.FC = () => {
   const [newPresetName, setNewPresetName] = useState<string>('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [selectedPresetIds, setSelectedPresetIds] = useState<Set<string>>(new Set());
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -88,12 +89,32 @@ const IDPresetsPanel: React.FC = () => {
     return p.category === activeCategory;
   });
 
-  const handleApplyPreset = (preset: Preset) => {
-    dispatch(applyPartialSnapshot(preset.parameters));
+  const handlePresetClick = (e: React.MouseEvent, preset: Preset) => {
+    if (e.metaKey || e.ctrlKey || e.shiftKey) {
+      // Multi-select toggle without applying grade
+      setSelectedPresetIds(prev => {
+        const next = new Set(prev);
+        if (next.has(preset.id)) {
+          next.delete(preset.id);
+        } else {
+          next.add(preset.id);
+        }
+        return next;
+      });
+    } else {
+      // Single select and apply grade
+      dispatch(applyPartialSnapshot(preset.parameters));
+      setSelectedPresetIds(new Set([preset.id]));
+    }
   };
 
   const handleDeletePreset = (id: string) => {
     dispatch(deletePreset(id));
+    setSelectedPresetIds(prev => {
+      const next = new Set(prev);
+      next.delete(id);
+      return next;
+    });
   };
 
   const handleSaveCurrent = () => {
@@ -118,10 +139,16 @@ const IDPresetsPanel: React.FC = () => {
     dispatch(addPreset(newPreset));
     setNewPresetName('');
     setIsSaving(false);
+    setSelectedPresetIds(new Set()); // Clear selection after saving new preset
   };
 
+  const selectedExportPresets = userPresets.filter(p => selectedPresetIds.has(p.id));
+
   const handleExport = () => {
-    exportPresets(userPresets);
+    if (selectedExportPresets.length > 0) {
+      exportPresets(selectedExportPresets);
+      setSelectedPresetIds(new Set()); // Clear selection after export
+    }
   };
 
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -225,12 +252,12 @@ const IDPresetsPanel: React.FC = () => {
             </button>
             <button
               onClick={handleExport}
-              disabled={userPresets.length === 0}
+              disabled={selectedExportPresets.length === 0}
               className="flex items-center gap-1.5 bg-[var(--bg-base)] hover:bg-[var(--bg-control)] disabled:opacity-40 disabled:hover:bg-[var(--bg-base)] border border-[var(--border)] text-[var(--text-secondary)] hover:text-[var(--text-primary)] px-3 py-1.5 rounded-md text-[11px] font-bold transition-all cursor-pointer"
-              title="Export custom presets"
+              title="Export selected custom presets"
             >
               <Download size={12} />
-              Export
+              {selectedExportPresets.length > 1 ? `Export (${selectedExportPresets.length})` : 'Export'}
             </button>
             <input 
               type="file"
@@ -262,7 +289,8 @@ const IDPresetsPanel: React.FC = () => {
                 <PresetCard
                   key={preset.id}
                   preset={preset}
-                  onApply={() => handleApplyPreset(preset)}
+                  isSelected={selectedPresetIds.has(preset.id)}
+                  onClick={(e) => handlePresetClick(e, preset)}
                   onDelete={preset.category === 'My Presets' ? () => handleDeletePreset(preset.id) : undefined}
                 />
               ))}
