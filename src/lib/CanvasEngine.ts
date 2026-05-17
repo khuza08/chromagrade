@@ -408,7 +408,7 @@ export class CanvasEngine {
         data[i] = Math.floor(lut[i] * 255.99);
       }
 
-      const label = ch.charAt(0).toUpperCase() + ch.slice(1);
+      const label = (ch as string).charAt(0).toUpperCase() + (ch as string).slice(1);
       const tex = this._curveTextures[label];
       if (tex) {
         gl.bindTexture(gl.TEXTURE_2D, tex);
@@ -451,7 +451,7 @@ export class CanvasEngine {
     this._needsRender = true;
   }
 
-  public resize(width: number, height: number) {
+  public resize(_width: number, _height: number) {
     // Note: We don't change gl.viewport here because the canvas internal resolution 
     // is fixed to the image proxy size. CSS object-contain handles display scaling.
     // We just flag a render if needed.
@@ -552,7 +552,7 @@ export class CanvasEngine {
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 
-      const uniformName = `u_curve${ch.charAt(0).toUpperCase() + ch.slice(1)}`;
+      const uniformName = `u_curve${(ch as string).charAt(0).toUpperCase() + (ch as string).slice(1)}`;
       const loc = gl.getUniformLocation(prog, uniformName);
       if (loc) gl.uniform1i(loc, 1 + index);
     });

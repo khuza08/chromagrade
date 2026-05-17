@@ -1,5 +1,4 @@
 import type { Middleware } from '@reduxjs/toolkit';
-import type { RootState } from '../store';
 
 const STORAGE_KEY = 'chromagrade_layout';
 const PERSIST_ACTIONS = [
@@ -8,11 +7,11 @@ const PERSIST_ACTIONS = [
   'ui/setBottomPanelHeight'
 ];
 
-export const persistMiddleware: Middleware<{}, RootState> = (store) => (next) => (action: any) => {
+export const persistMiddleware: Middleware = (store) => (next) => (action: any) => {
   const result = next(action);
 
   if (PERSIST_ACTIONS.includes(action.type)) {
-    const state = store.getState().ui;
+    const state = (store.getState() as any).ui;
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({
         leftSidebarWidth: state.leftSidebarWidth,

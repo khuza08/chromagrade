@@ -6,6 +6,7 @@ import { Circle, Activity, Pipette, Palette, Sparkles, Map } from 'lucide-react'
 import WheelsPanel from '../panels/WheelsPanel';
 import CurvesPanel from '../panels/CurvesPanel';
 import HSLPanel from '../panels/HSLPanel';
+import IDPresetsPanel from '../panels/IDPresetsPanel';
 import EmptyStateOverlay from '../ui/EmptyStateOverlay';
 
 const tabs = [
@@ -58,6 +59,8 @@ const BottomPanel: React.FC = () => {
           <CurvesPanel />
         ) : activeTab === 'hsl' ? (
           <HSLPanel />
+        ) : activeTab === 'presets' ? (
+          <IDPresetsPanel />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-[var(--text-secondary)] text-sm italic">
             {activeTab.charAt(0).toUpperCase() + activeTab.slice(1)} Panel coming soon...

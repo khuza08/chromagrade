@@ -5,6 +5,7 @@ import imageReducer from './slices/imageSlice';
 import uiReducer from './slices/uiSlice';
 import exportReducer from './slices/exportSlice';
 import histogramReducer from './slices/histogramSlice';
+import presetsReducer from './slices/presetsSlice';
 import { historyMiddleware } from './middleware/historyMiddleware';
 import { persistMiddleware } from './middleware/persistMiddleware';
 
@@ -16,6 +17,7 @@ export const store = configureStore({
     ui: uiReducer,
     export: exportReducer,
     histogram: histogramReducer,
+    presets: presetsReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(historyMiddleware, persistMiddleware),

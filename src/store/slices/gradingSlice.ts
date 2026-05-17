@@ -1,6 +1,18 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 
+export interface CurvePoint {
+  x: number;
+  y: number;
+}
+
+export interface CurvesState {
+  master: CurvePoint[];
+  red: CurvePoint[];
+  green: CurvePoint[];
+  blue: CurvePoint[];
+}
+
 export interface WheelValue {
   x: number;      // -1.0 to 1.0 (Color balance X)
   y: number;      // -1.0 to 1.0 (Color balance Y)
@@ -130,6 +142,23 @@ export const gradingSlice = createSlice({
     },
     resetGrading: () => initialState,
     applySnapshot: (_, action: PayloadAction<GradingState>) => action.payload,
+    applyPartialSnapshot: (state, action: PayloadAction<Partial<GradingState>>) => {
+      const payload = action.payload;
+      if (payload.contrast !== undefined) state.contrast = payload.contrast;
+      if (payload.pivot !== undefined) state.pivot = payload.pivot;
+      if (payload.saturation !== undefined) state.saturation = payload.saturation;
+      if (payload.temperature !== undefined) state.temperature = payload.temperature;
+      if (payload.tint !== undefined) state.tint = payload.tint;
+      if (payload.primary) {
+        state.primary = { ...state.primary, ...payload.primary };
+      }
+      if (payload.curves) {
+        state.curves = { ...state.curves, ...payload.curves };
+      }
+      if (payload.hsl) {
+        state.hsl = { ...state.hsl, ...payload.hsl };
+      }
+    },
   },
 });
 
@@ -148,6 +177,7 @@ export const {
   resetAllHSL,
   resetGrading,
   applySnapshot,
+  applyPartialSnapshot,
 } = gradingSlice.actions;
 
 export default gradingSlice.reducer;

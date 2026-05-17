@@ -5,7 +5,6 @@ import { setCurvePoints } from '../../store/slices/gradingSlice';
 import type { CurvePoint, CurvesState } from '../../store/slices/gradingSlice';
 import { getMonotoneCubicSpline } from '../../lib/math/spline';
 import { canvasEngine } from '../../lib/CanvasEngine';
-import { histogramGenerator } from '../../lib/HistogramGenerator';
 import type { HistogramData } from '../../lib/HistogramGenerator';
 
 interface CurveGraphProps {
@@ -15,7 +14,7 @@ interface CurveGraphProps {
   histogramData?: HistogramData | null;
 }
 
-const CurveGraph: React.FC<CurveGraphProps> = ({ channel, points, isPickerActive, histogramData }) => {
+const CurveGraph: React.FC<CurveGraphProps> = ({ channel, points, histogramData }) => {
   const dispatch = useDispatch();
   const allCurves = useSelector((state: RootState) => state.grading.curves);
   const svgRef = useRef<SVGSVGElement>(null);
@@ -178,7 +177,7 @@ const CurveGraph: React.FC<CurveGraphProps> = ({ channel, points, isPickerActive
     };
 
     drawBin(histogramData.master, '#888', 0.2);
-    if (channel !== 'master') drawBin(histogramData[channel], channelColor, 0.3);
+    if (channel !== 'master') drawBin(histogramData[channel as 'red' | 'green' | 'blue'], channelColor, 0.3);
 
     ctx.globalAlpha = 1.0;
   }, [histogramData, channel, channelColor]);

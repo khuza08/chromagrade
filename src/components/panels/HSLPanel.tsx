@@ -86,7 +86,7 @@ const HSLPanel: React.FC = () => {
           </div>
           <div className="flex flex-col items-end">
             <span className="text-[10px] font-bold uppercase tracking-widest text-[var(--text-primary)]">
-              {viewMode === 'hsl' ? attributeLabels[activeAttribute] : `${activeBin.label.toUpperCase()} CHANNEL`}
+              {viewMode === 'hsl' ? attributeLabels[activeAttribute as keyof typeof attributeLabels] : `${activeBin.label.toUpperCase()} CHANNEL`}
             </span>
           </div>
         </div>
@@ -101,7 +101,7 @@ const HSLPanel: React.FC = () => {
                 <HSLSlider
                   key={bin.id}
                   channel={bin.id}
-                  type={attributeKeys[activeAttribute]}
+                  type={attributeKeys[activeAttribute as keyof typeof attributeKeys]}
                   label={bin.label}
                   hueDeg={bin.hue}
                 />
