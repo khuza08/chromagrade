@@ -143,6 +143,7 @@ export const gradingSlice = createSlice({
     resetGrading: () => initialState,
     applySnapshot: (_, action: PayloadAction<GradingState>) => action.payload,
     applyPartialSnapshot: (state, action: PayloadAction<Partial<GradingState>>) => {
+      Object.assign(state, initialState);
       const payload = action.payload;
       if (payload.contrast !== undefined) state.contrast = payload.contrast;
       if (payload.pivot !== undefined) state.pivot = payload.pivot;
