@@ -142,7 +142,7 @@ const IDPresetsPanel: React.FC = () => {
     setSelectedPresetIds(new Set()); // Clear selection after saving new preset
   };
 
-  const selectedExportPresets = userPresets.filter(p => selectedPresetIds.has(p.id));
+  const selectedExportPresets = allPresets.filter(p => selectedPresetIds.has(p.id));
 
   const handleExport = () => {
     if (selectedExportPresets.length > 0) {
@@ -157,8 +157,9 @@ const IDPresetsPanel: React.FC = () => {
 
     try {
       setErrorMsg(null);
-      const imported = await readPresetsFile(file);
-      dispatch(importPresets(imported));
+      const { importedPresets, totalFound } = await readPresetsFile(file);
+      dispatch(importPresets(importedPresets));
+      setToastMessage(`Imported ${importedPresets.length} of ${totalFound} presets.`);
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : 'Import failed');
     } finally {
@@ -263,7 +264,7 @@ const IDPresetsPanel: React.FC = () => {
               type="file"
               ref={fileInputRef}
               onChange={handleImport}
-              accept=".json"
+              accept=".json,.zip"
               className="hidden"
             />
           </div>
