@@ -52,13 +52,6 @@ const CanvasViewer: React.FC = () => {
     return () => document.removeEventListener('fullscreenchange', handleFsChange);
   }, []);
 
-  // Redraw when grading params change
-  useEffect(() => {
-    if (originalUrl) {
-      canvasEngine.render(gradingParams);
-    }
-  }, [gradingParams, originalUrl]);
-
   // Update Curve and HSL Textures separately to avoid excessive LUT generation
   useEffect(() => {
     canvasEngine.updateCurveTextures(curves);
@@ -67,6 +60,13 @@ const CanvasViewer: React.FC = () => {
   useEffect(() => {
     canvasEngine.updateHslTextures(gradingParams.hsl);
   }, [gradingParams.hsl]);
+
+  // Redraw when grading params change
+  useEffect(() => {
+    if (originalUrl) {
+      canvasEngine.render(gradingParams);
+    }
+  }, [gradingParams, originalUrl]);
 
   // Extract color palette for dynamic UI
   useEffect(() => {

@@ -1,12 +1,59 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../store/store';
 import { addPreset, deletePreset, importPresets } from '../../store/slices/presetsSlice';
 import type { Preset } from '../../store/slices/presetsSlice';
 import { applyPartialSnapshot } from '../../store/slices/gradingSlice';
+import type { GradingState } from '../../store/slices/gradingSlice';
 import PresetCard from '../ui/PresetCard';
 import { exportPresets, importPresets as readPresetsFile } from '../../utils/presetIO';
-import { Plus, Download, Upload, AlertCircle } from 'lucide-react';
+import { Plus, Download, Upload, AlertCircle, AlertTriangle, X } from 'lucide-react';
+
+const isGradeChanged = (grade: GradingState): boolean => {
+  // 1. Sliders check
+  if (
+    grade.contrast !== 0 ||
+    grade.pivot !== 0.5 ||
+    grade.saturation !== 0 ||
+    grade.temperature !== 0 ||
+    grade.tint !== 0
+  ) {
+    return true;
+  }
+
+  // 2. Color Wheels check
+  const wheels = ['shadows', 'midtones', 'highlights', 'global'] as const;
+  for (const wheel of wheels) {
+    const value = grade.primary[wheel];
+    if (value.x !== 0 || value.y !== 0 || value.luma !== 1.0) {
+      return true;
+    }
+  }
+
+  // 3. Curves check
+  const channels = ['master', 'red', 'green', 'blue'] as const;
+  for (const ch of channels) {
+    const points = grade.curves[ch];
+    if (points.length !== 2) return true;
+    if (
+      points[0].x !== 0 || points[0].y !== 0 ||
+      points[1].x !== 1 || points[1].y !== 1
+    ) {
+      return true;
+    }
+  }
+
+  // 4. HSL check
+  const bins = ['red', 'orange', 'yellow', 'green', 'aqua', 'blue', 'purple', 'magenta'] as const;
+  for (const bin of bins) {
+    const values = grade.hsl[bin];
+    if (values.h !== 0 || values.s !== 0 || values.l !== 0) {
+      return true;
+    }
+  }
+
+  return false;
+};
 
 const IDPresetsPanel: React.FC = () => {
   const dispatch = useDispatch();
@@ -17,8 +64,16 @@ const IDPresetsPanel: React.FC = () => {
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [newPresetName, setNewPresetName] = useState<string>('');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Toast timer auto-dismiss with cleanup
+  useEffect(() => {
+    if (!toastMessage) return;
+    const id = setTimeout(() => setToastMessage(null), 3000);
+    return () => clearTimeout(id);
+  }, [toastMessage]);
 
   // Combine both preset lists
   const allPresets = [...prebuiltPresets, ...userPresets];
@@ -84,6 +139,14 @@ const IDPresetsPanel: React.FC = () => {
     }
   };
 
+  const handleOpenSaveInput = () => {
+    if (!isGradeChanged(currentGrading)) {
+      setToastMessage("No changes detected. Adjust sliders, wheels, or curves before saving a preset.");
+      return;
+    }
+    setIsSaving(true);
+  };
+
   return (
     <div className="flex h-full bg-[var(--bg-panel)] p-4 gap-6 select-none">
       {/* Sidebar - Categories */}
@@ -142,7 +205,7 @@ const IDPresetsPanel: React.FC = () => {
           ) : (
             <div className="flex items-center gap-2">
               <button
-                onClick={() => setIsSaving(true)}
+                onClick={handleOpenSaveInput}
                 className="flex items-center gap-1.5 bg-[var(--theme-primary)]/10 hover:bg-[var(--theme-primary)]/20 text-[var(--theme-primary)] px-3 py-1.5 rounded-md text-[11px] font-bold transition-all"
               >
                 <Plus size={12} />
@@ -207,6 +270,19 @@ const IDPresetsPanel: React.FC = () => {
           )}
         </div>
       </div>
+      {toastMessage && (
+        <div className="fixed top-4 right-4 z-50 flex items-center gap-3 bg-[var(--bg-panel)]/95 border border-amber-500/25 backdrop-blur-md text-[var(--text-primary)] px-4 py-3 rounded-lg shadow-2xl animate-in fade-in slide-in-from-top-4 duration-300">
+          <AlertTriangle size={16} className="text-amber-500 shrink-0" />
+          <span className="text-xs font-bold">{toastMessage}</span>
+          <button 
+            onClick={() => setToastMessage(null)}
+            className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] p-0.5 rounded transition-colors ml-1 cursor-pointer"
+            aria-label="Dismiss notification"
+          >
+            <X size={14} />
+          </button>
+        </div>
+      )}
     </div>
   );
 };
