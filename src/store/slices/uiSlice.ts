@@ -31,6 +31,7 @@ interface UIState {
   rightSidebarWidth: number;
   bottomPanelHeight: number;
   leftSidebarCollapsed: boolean;
+  viewportResetToken: number; // increment to trigger viewport reset in CanvasViewer
 }
 
 const initialState: UIState = {
@@ -49,6 +50,7 @@ const initialState: UIState = {
   rightSidebarWidth: savedLayout?.rightSidebarWidth ?? 256,
   bottomPanelHeight: savedLayout?.bottomPanelHeight ?? 320,
   leftSidebarCollapsed: false,
+  viewportResetToken: 0,
 };
 
 
@@ -96,6 +98,9 @@ export const uiSlice = createSlice({
     toggleLeftSidebar: (state) => {
       state.leftSidebarCollapsed = !state.leftSidebarCollapsed;
     },
+    resetViewport: (state) => {
+      state.viewportResetToken += 1;
+    },
     setRightSidebarWidth: (state, action: PayloadAction<number>) => {
       state.rightSidebarWidth = action.payload;
     },
@@ -121,6 +126,7 @@ export const {
   setRightSidebarWidth,
   setBottomPanelHeight,
   toggleLeftSidebar,
+  resetViewport,
 } = uiSlice.actions;
 
 export default uiSlice.reducer;

@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../store/store';
 import { undo, redo, resetHistory } from '../../store/slices/historySlice';
 import { applySnapshot, resetGrading } from '../../store/slices/gradingSlice';
-import { setExportModalOpen, toggleLeftSidebar } from '../../store/slices/uiSlice';
+import { setExportModalOpen, toggleLeftSidebar, resetViewport } from '../../store/slices/uiSlice';
 import { openModal } from '../../store/slices/colorTransferSlice';
 import { setImage, clearImage } from '../../store/slices/imageSlice';
 import { canvasEngine } from '../../lib/CanvasEngine';
@@ -55,6 +55,7 @@ const TopBar: React.FC = () => {
       dispatch(setImage({ url, width: dimensions.width, height: dimensions.height, name: workspace.fileName }));
       dispatch(applySnapshot(workspace.gradingState));
       dispatch(resetHistory());
+      dispatch(resetViewport());
       canvasEngine.render(workspace.gradingState);
     } catch (err: any) {
       alert(err.message || 'Failed to load workspace');

@@ -18,6 +18,7 @@ const CanvasViewer: React.FC = () => {
   const { applyPalette } = useTheme();
   const { originalUrl, dimensions, fileName } = useSelector((state: RootState) => state.image);
   const { activeBottomTab, isPickerActive } = useSelector((state: RootState) => state.ui);
+  const viewportResetToken = useSelector((state: RootState) => state.ui.viewportResetToken);
   const { curves } = useSelector((state: RootState) => state.grading);
   const gradingParams = useSelector((state: RootState) => state.grading);
   const [zoom, setZoom] = useState(1.0);
@@ -83,6 +84,16 @@ const CanvasViewer: React.FC = () => {
     return () => clearTimeout(timer);
   }, [originalUrl, applyPalette]);
 
+
+  // Reset zoom/pan when workspace is loaded externally (e.g. from TopBar)
+  useEffect(() => {
+    if (viewportResetToken === 0) return;
+    setTimeout(() => {
+      const fit = calculateFitZoom();
+      setZoom(fit);
+      setPan({ x: 0, y: 0 });
+    }, 50);
+  }, [viewportResetToken]);
 
   // Handle Resizing
   useEffect(() => {
