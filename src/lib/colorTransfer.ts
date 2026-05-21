@@ -194,7 +194,7 @@ function getOrthoDistance(p: CurvePoint, a: CurvePoint, b: CurvePoint): number {
  */
 export function enforceMonotonic(points: CurvePoint[]): CurvePoint[] {
   if (points.length === 0) return [];
-  
+
   const result: CurvePoint[] = [{ ...points[0] }];
   for (let i = 1; i < points.length; i++) {
     const prev = result[i - 1];
@@ -241,17 +241,18 @@ export function analyzeImage(imageData: ImageData): ImageStats {
     sumASq += lab.a * lab.a;
     sumBSq += lab.b * lab.b;
 
-    // Lightness CDF
-    const lIdx = Math.min(255, Math.max(0, Math.round(lab.l * 2.55)));
-    lHist[lIdx]++;
+    // Luminance histogram — use RGB luma (same space as RGB channels)
+    // LAB L is perceptually uniform but not in 0-255 RGB space; applying it
+    // as an RGB curve causes channel imbalance (green cast).
+    const luma = Math.round(0.2126 * r + 0.7152 * g + 0.0722 * b);
+    lHist[Math.min(255, luma)]++;
 
-    // Zone accumulation (zones based on L value mapped to 0..255)
-    const l255 = lab.l * 2.55;
-    if (l255 < 85) {
+    // Zone accumulation based on RGB luma
+    if (luma < 85) {
       shadowsA += lab.a;
       shadowsB += lab.b;
       shadowsCount++;
-    } else if (l255 < 170) {
+    } else if (luma < 170) {
       midtonesA += lab.a;
       midtonesB += lab.b;
       midtonesCount++;
@@ -319,48 +320,61 @@ export function computeTransfer(base: ImageStats, ref: ImageStats): ColorTransfe
     return enforceMonotonic(simplified);
   };
 
-  const curves = {
-    master: processChannelCurve(base.rgbCdf.l, ref.rgbCdf.l),
-    red: processChannelCurve(base.rgbCdf.r, ref.rgbCdf.r),
-    green: processChannelCurve(base.rgbCdf.g, ref.rgbCdf.g),
-    blue: processChannelCurve(base.rgbCdf.b, ref.rgbCdf.b),
-  };
+  // 2. Compute chromaPresence first — needed to decide curve strategy.
+  const refChromaStd = Math.sqrt(ref.labStd.a ** 2 + ref.labStd.b ** 2);
+  // B&W images measure ~1.3 refChromaStd. Threshold at 3.0 with hard zero below 1.5.
+  const GRAYSCALE_THRESHOLD = 3.0;
+  const chromaPresence = refChromaStd < 1.5
+    ? 0
+    : Math.min(1, (refChromaStd - 1.5) / (GRAYSCALE_THRESHOLD - 1.5));
 
-  // 2. Temperature & Tint (LAB delta * 4.0, clamped ±500)
-  const temperature = Math.min(500, Math.max(-500, (ref.labMean.b - base.labMean.b) * 4.0));
-  const tint = Math.min(500, Math.max(-500, (ref.labMean.a - base.labMean.a) * 4.0));
+  const masterCurve = processChannelCurve(base.rgbCdf.l, ref.rgbCdf.l);
 
-  // 3. Saturation (LAB chroma ratio, fallback to std ratio if grayscale)
-  const baseChroma = Math.sqrt(base.labMean.a ** 2 + base.labMean.b ** 2);
-  const refChroma = Math.sqrt(ref.labMean.a ** 2 + ref.labMean.b ** 2);
+  // For B&W reference, R/G/B CDFs are identical (R=G=B per pixel).
+  // Mapping each channel independently against a colorful base reintroduces color
+  // because the base R/G/B CDFs differ. Collapse all channels to the master
+  // luminance curve when reference is grayscale.
+  const curves = chromaPresence < 0.1
+    ? { master: masterCurve, red: masterCurve, green: masterCurve, blue: masterCurve }
+    : {
+        master: masterCurve,
+        red: processChannelCurve(base.rgbCdf.r, ref.rgbCdf.r),
+        green: processChannelCurve(base.rgbCdf.g, ref.rgbCdf.g),
+        blue: processChannelCurve(base.rgbCdf.b, ref.rgbCdf.b),
+      };
 
-  let chromaRatio = 0;
-  if (baseChroma >= 1e-3) {
-    chromaRatio = refChroma / baseChroma;
-  } else {
-    const baseChromaStd = Math.sqrt(base.labStd.a ** 2 + base.labStd.b ** 2);
-    const refChromaStd = Math.sqrt(ref.labStd.a ** 2 + ref.labStd.b ** 2);
-    chromaRatio = refChromaStd / Math.max(baseChromaStd, 1e-3);
-  }
-  const saturation = Math.min(100, Math.max(-100, (chromaRatio - 1) * 100));
+  // 3. Temperature & Tint
+  const temperature = Math.min(500, Math.max(-500, (ref.labMean.b - base.labMean.b) * 4.0)) * chromaPresence;
+  const tint = Math.min(500, Math.max(-500, (ref.labMean.a - base.labMean.a) * 4.0)) * chromaPresence;
 
-  // 4. Color Wheels offsets (scaled by 0.05, clamped to [-1, 1])
+  // 4. Saturation — force -100 for grayscale reference, ratio-based for colorful.
+  const baseChromaStd = Math.sqrt(base.labStd.a ** 2 + base.labStd.b ** 2);
+  const chromaRatio = refChromaStd / Math.max(baseChromaStd, 1e-3);
+  const saturation = chromaPresence === 0
+    ? -100
+    : Math.min(100, Math.max(-100, (chromaRatio - 1) * 100));
+
+  // 5. Color Wheels — scale x/y by chromaPresence so B&W reference produces no cast.
   const wheelScale = 0.05;
-  const computeWheelOffset = (refZone: { a: number; b: number }, baseZone: { a: number; b: number }): WheelValue => {
+  const computeWheelOffset = (
+    refZone: { a: number; b: number },
+    baseZone: { a: number; b: number },
+    chromaPresence: number,
+  ): WheelValue => {
     const deltaA = refZone.a - baseZone.a;
     const deltaB = refZone.b - baseZone.b;
 
     return {
-      x: Math.min(1, Math.max(-1, deltaA * wheelScale)),
-      y: Math.min(1, Math.max(-1, -deltaB * wheelScale)), // Negative since positive y shifts to blue (negative b)
+      x: Math.min(1, Math.max(-1, deltaA * wheelScale)) * chromaPresence,
+      y: Math.min(1, Math.max(-1, -deltaB * wheelScale)) * chromaPresence, // Negative since positive y shifts to blue (negative b)
       luma: 1.0,
     };
   };
 
   const primary = {
-    shadows: computeWheelOffset(ref.zoneMeans.shadows, base.zoneMeans.shadows),
-    midtones: computeWheelOffset(ref.zoneMeans.midtones, base.zoneMeans.midtones),
-    highlights: computeWheelOffset(ref.zoneMeans.highlights, base.zoneMeans.highlights),
+    shadows: computeWheelOffset(ref.zoneMeans.shadows, base.zoneMeans.shadows, chromaPresence),
+    midtones: computeWheelOffset(ref.zoneMeans.midtones, base.zoneMeans.midtones, chromaPresence),
+    highlights: computeWheelOffset(ref.zoneMeans.highlights, base.zoneMeans.highlights, chromaPresence),
   };
 
   return { curves, temperature, tint, saturation, primary };
@@ -407,7 +421,11 @@ function blendCurve(baseCurve: CurvePoint[], transferCurve: CurvePoint[], streng
 export function blendGrading(base: GradingState, transfer: ColorTransferResult, strength: number): GradingState {
   const lerp = (vBase: number, vTransfer: number) => vBase + (vTransfer - vBase) * strength;
 
-  // Lerp primary wheels component-wise
+  // TASK-007: blendWheel lerps wheel x/y from base toward transfer at the given strength.
+  // For a B&W reference, computeTransfer sets transfer wheel x/y to 0 (via chromaPresence ≈ 0).
+  // So at any strength, the lerp becomes: base.x * 1.0 + 0 * strength = base.x preserved,
+  // with no cast contribution from the transfer side. At strength=0.5 with B&W reference,
+  // blended wheel x/y = exactly the base wheel values — no cast is added.
   const blendWheel = (wBase: WheelValue, wTransfer: WheelValue): WheelValue => ({
     x: lerp(wBase.x, wTransfer.x),
     y: lerp(wBase.y, wTransfer.y),
@@ -417,7 +435,7 @@ export function blendGrading(base: GradingState, transfer: ColorTransferResult, 
   const shadows = blendWheel(base.primary.shadows, transfer.primary.shadows);
   const midtones = blendWheel(base.primary.midtones, transfer.primary.midtones);
   const highlights = blendWheel(base.primary.highlights, transfer.primary.highlights);
-  
+
   // global wheel is kept at base
   const global = { ...base.primary.global };
 
