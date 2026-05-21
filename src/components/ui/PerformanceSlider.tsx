@@ -33,14 +33,15 @@ const PerformanceSlider: React.FC<PerformanceSliderProps> = ({
     setLocalValue(newVal);
     isDragging.current = true;
 
-    // Direct engine update for 60fps performance
+        // Direct engine update for 60fps performance
     const tempParams = { ...currentGrading };
     const labelLower = label.toLowerCase();
     if (labelLower === 'contrast') tempParams.contrast = newVal;
     else if (labelLower === 'saturation') tempParams.saturation = newVal;
     else if (labelLower === 'temperature') tempParams.temperature = newVal;
     else if (labelLower === 'tint') tempParams.tint = newVal;
-    
+    else if (labelLower === 'vibrance') tempParams.vibrance = newVal;
+
     canvasEngine.render(tempParams);
   };
 
