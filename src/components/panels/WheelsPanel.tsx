@@ -6,6 +6,7 @@ import {
   setSaturation, 
   setTemperature, 
   setTint, 
+  setVibrance,
   setPrimaryWheel, 
   resetPrimaryWheel
 } from '../../store/slices/gradingSlice';
@@ -68,6 +69,13 @@ const WheelsPanel: React.FC = () => {
           value={grading.tint} 
           onChange={(v) => dispatch(setTint(v))} 
           onReset={() => dispatch(setTint(0))}
+        />
+        <PerformanceSlider 
+          label="Vibrance" 
+          min={-100} max={100} 
+          value={grading.vibrance} 
+          onChange={(v) => dispatch(setVibrance(v))} 
+          onReset={() => dispatch(setVibrance(0))} 
         />
       </div>
     </div>

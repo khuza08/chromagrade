@@ -50,6 +50,7 @@ export interface GradingState {
   saturation: number;
   temperature: number;
   tint: number;
+  vibrance: number;
   curves: CurvesState;
   hsl: HSLState;
 }
@@ -70,6 +71,7 @@ const initialState: GradingState = {
   saturation: 0,
   temperature: 0,
   tint: 0,
+  vibrance: 0,
   curves: {
     master: [...initialCurve],
     red: [...initialCurve],
@@ -116,6 +118,9 @@ export const gradingSlice = createSlice({
     },
     setTint: (state, action: PayloadAction<number>) => {
       state.tint = action.payload;
+    },
+    setVibrance: (state, action: PayloadAction<number>) => {
+      state.vibrance = action.payload;
     },
     setCurvePoints: (
       state,
@@ -171,6 +176,7 @@ export const {
   setSaturation,
   setTemperature,
   setTint,
+  setVibrance,
   setCurvePoints,
   resetCurve,
   setHSLChannel,

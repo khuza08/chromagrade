@@ -128,7 +128,7 @@ export class CanvasEngine {
 
     // Cache uniforms
     const uniforms = [
-      'u_texture', 'u_resolution', 'u_contrast', 'u_saturation', 
+      'u_texture', 'u_resolution', 'u_contrast', 'u_saturation', 'u_vibrance', 
       'u_temperature', 'u_tint', 'u_shadows', 'u_midtones', 'u_highlights', 'u_global',
       'u_curveMaster', 'u_curveRed', 'u_curveGreen', 'u_curveBlue',
       'u_hslHue', 'u_hslSat', 'u_hslLum',
@@ -138,6 +138,11 @@ export class CanvasEngine {
       const location = gl.getUniformLocation(this.program!, name);
       if (location) this._uniforms[name] = location;
     });
+    // Development-only log to verify uniform location
+    if (process.env.NODE_ENV === 'development') {
+      console.log('u_vibrance location:', this._uniforms['u_vibrance']);
+    }
+
 
     // Initialize Curve Textures (Default identity mapping)
     const channels = ['Master', 'Red', 'Green', 'Blue'];
@@ -318,6 +323,7 @@ export class CanvasEngine {
     gl.uniform1f(this._uniforms['u_saturation'], (params.saturation + 100) / 100);
     gl.uniform1f(this._uniforms['u_temperature'], params.temperature / 500);
     gl.uniform1f(this._uniforms['u_tint'], params.tint / 500);
+    gl.uniform1f(this._uniforms['u_vibrance'], params.vibrance / 100);
 
     // Shadows (Lift)
     const shadows = this.cartesianToRGB(params.primary.shadows, 0.2);
@@ -515,6 +521,7 @@ export class CanvasEngine {
     setUni('u_saturation', 'uniform1f', (params.saturation + 100) / 100);
     setUni('u_temperature', 'uniform1f', params.temperature / 500);
     setUni('u_tint', 'uniform1f', params.tint / 500);
+    setUni('u_vibrance', 'uniform1f', params.vibrance / 100);
 
     const s = this.cartesianToRGB(params.primary.shadows, 0.2);
     setUni('u_shadows', 'uniform3f', s.r, s.g, s.b);
