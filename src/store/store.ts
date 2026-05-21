@@ -6,6 +6,7 @@ import uiReducer from './slices/uiSlice';
 import exportReducer from './slices/exportSlice';
 import histogramReducer from './slices/histogramSlice';
 import presetsReducer from './slices/presetsSlice';
+import colorTransferReducer from './slices/colorTransferSlice';
 import { historyMiddleware } from './middleware/historyMiddleware';
 import { persistMiddleware } from './middleware/persistMiddleware';
 
@@ -18,6 +19,7 @@ export const store = configureStore({
     export: exportReducer,
     histogram: histogramReducer,
     presets: presetsReducer,
+    colorTransfer: colorTransferReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(historyMiddleware, persistMiddleware),

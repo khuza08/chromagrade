@@ -1,10 +1,11 @@
 import React from 'react';
-import { Undo2, Redo2, RotateCcw, Download, Menu } from 'lucide-react';
+import { Undo2, Redo2, RotateCcw, Download, Menu, Wand2 } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../store/store';
 import { undo, redo, resetHistory } from '../../store/slices/historySlice';
 import { applySnapshot, resetGrading } from '../../store/slices/gradingSlice';
 import { setExportModalOpen } from '../../store/slices/uiSlice';
+import { openModal } from '../../store/slices/colorTransferSlice';
 
 const TopBar: React.FC = () => {
   const dispatch = useDispatch();
@@ -26,6 +27,10 @@ const TopBar: React.FC = () => {
       dispatch(redo(currentGrading));
       dispatch(applySnapshot(next));
     }
+  };
+
+  const handleMatchColor = () => {
+    dispatch(openModal(currentGrading));
   };
 
   const handleReset = () => {
@@ -62,6 +67,15 @@ const TopBar: React.FC = () => {
           <Redo2 size={18} />
         </button>
         <div className="w-[1px] h-4 bg-[var(--border)] mx-1" />
+        <button 
+          onClick={handleMatchColor}
+          disabled={!hasImage}
+          className="flex items-center gap-1.5 px-3 py-1 hover:bg-[var(--bg-hover)] rounded text-xs font-medium text-[var(--text-secondary)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          title="Match Color"
+        >
+          <Wand2 size={14} />
+          Match Color
+        </button>
         <button 
           onClick={handleReset}
           disabled={!hasImage}

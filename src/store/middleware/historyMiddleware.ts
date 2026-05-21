@@ -7,8 +7,11 @@ export const historyMiddleware: Middleware = store => next => action => {
   const isGradingAction = actionType.startsWith('grading/') && 
                          actionType !== 'grading/applySnapshot' &&
                          actionType !== 'grading/resetGrading';
+  
+  // Explicitly ignore colorTransfer actions (as required by task)
+  const isColorTransferAction = actionType.startsWith('colorTransfer/');
 
-  if (isGradingAction) {
+  if (isGradingAction && !isColorTransferAction) {
     const state = store.getState() as any;
     // Save current state to history before it gets updated
     if (state.grading) {
