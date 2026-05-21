@@ -31,10 +31,12 @@ const ColorTransferModal: React.FC = () => {
 
   const originalUrl = useSelector((state: RootState) => state.image.originalUrl);
 
+  const [isAnalyzingBase, setIsAnalyzingBase] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const localEngine = useRef<CanvasEngine | null>(null);
   const referenceImageUrlRef = useRef<string | null>(null);
+  const baseAnalyzedRef = useRef<string | null>(null); // tracks which url has been analyzed
 
   // Store reference image url in a ref for cleanup stability
   useEffect(() => {
@@ -44,6 +46,7 @@ const ColorTransferModal: React.FC = () => {
   // Clean up when modal closes or unmounts
   useEffect(() => {
     if (!isOpen) {
+      baseAnalyzedRef.current = null;
       if (referenceImageUrlRef.current) {
         URL.revokeObjectURL(referenceImageUrlRef.current);
         referenceImageUrlRef.current = null;
@@ -70,10 +73,11 @@ const ColorTransferModal: React.FC = () => {
     }
   }, [isOpen]);
 
-  // Analyze Base Image when modal opens
+  // Analyze Base Image when modal opens (runs once per unique originalUrl)
   useEffect(() => {
-    if (isOpen && originalUrl) {
-      dispatch(setStatus('analyzing'));
+    if (isOpen && originalUrl && baseAnalyzedRef.current !== originalUrl) {
+      baseAnalyzedRef.current = originalUrl;
+      setIsAnalyzingBase(true);
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => {
@@ -89,10 +93,13 @@ const ColorTransferModal: React.FC = () => {
           dispatch(setBaseStats(stats));
         } catch (err: any) {
           dispatch(setError(err.message || 'Failed to analyze base image'));
+        } finally {
+          setIsAnalyzingBase(false);
         }
       };
       img.onerror = () => {
         dispatch(setError('Failed to load base image'));
+        setIsAnalyzingBase(false);
       };
       img.src = originalUrl;
     }
@@ -304,7 +311,7 @@ const ColorTransferModal: React.FC = () => {
                 ref={canvasRef}
                 className="max-w-full max-h-full object-contain shadow-md"
               />
-              {status === 'analyzing' && (
+              {isAnalyzingBase && (
                 <div className="absolute inset-0 bg-black/30 flex flex-col items-center justify-center gap-3">
                   <Loader2 size={32} className="animate-spin text-[var(--theme-primary)]" />
                   <span className="text-xs font-semibold text-[var(--text-primary)]">Analyzing Base...</span>
