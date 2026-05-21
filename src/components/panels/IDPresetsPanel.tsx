@@ -264,7 +264,7 @@ const IDPresetsPanel: React.FC = () => {
               type="file"
               ref={fileInputRef}
               onChange={handleImport}
-              accept=".json,.zip"
+              accept=".chromagrade,.zip"
               className="hidden"
             />
           </div>

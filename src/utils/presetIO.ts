@@ -31,7 +31,7 @@ export const exportPresets = async (presets: Preset[]) => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = `chromagrade-${sanitized}.json`;
+    link.download = `${sanitized}.chromagrade`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -42,13 +42,13 @@ export const exportPresets = async (presets: Preset[]) => {
 
     for (const preset of presets) {
       const baseName = sanitizeName(preset.name);
-      let fileName = `chromagrade-${baseName}.json`;
+      let fileName = `${baseName}.chromagrade`;
       
       // Prevent collisions in case multiple presets have identical names
       if (nameMap.has(baseName)) {
         const count = nameMap.get(baseName)! + 1;
         nameMap.set(baseName, count);
-        fileName = `chromagrade-${baseName}-${count}.json`;
+        fileName = `${baseName}-${count}.chromagrade`;
       } else {
         nameMap.set(baseName, 1);
       }
@@ -74,7 +74,7 @@ export const importPresets = (file: File): Promise<ImportResult> => {
     if (file.name.endsWith('.zip')) {
       try {
         const zip = await JSZip.loadAsync(file);
-        const jsonFiles = Object.keys(zip.files).filter(name => name.endsWith('.json'));
+        const jsonFiles = Object.keys(zip.files).filter(name => name.endsWith('.chromagrade') || name.endsWith('.json'));
         
         const totalFound = jsonFiles.length;
         const importedPresets: Preset[] = [];
@@ -92,7 +92,7 @@ export const importPresets = (file: File): Promise<ImportResult> => {
         }
 
         if (totalFound === 0) {
-          reject(new Error('No JSON files found in the archive'));
+          reject(new Error('No .chromagrade files found in the archive'));
           return;
         }
 
