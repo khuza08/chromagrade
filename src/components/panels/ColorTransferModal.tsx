@@ -218,14 +218,14 @@ const ColorTransferModal: React.FC = () => {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 safari-blur p-4">
       <div className="bg-[var(--bg-panel)] border border-[var(--border)] rounded-2xl shadow-2xl w-full max-w-5xl h-[85vh] flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         
         {/* Header */}
         <div className="flex justify-between items-center px-6 py-4 border-b border-[var(--border)] bg-black/10">
           <div className="flex items-center gap-2 text-[var(--theme-primary)]">
             <Wand2 size={20} />
-            <h2 className="text-base font-bold tracking-tight text-[var(--text-primary)]">Match Color (Color Transfer)</h2>
+            <h2 className="text-base font-bold tracking-tight text-[var(--text-primary)]">Match Color (experimental)</h2>
           </div>
           <button
             onClick={handleCancel}
