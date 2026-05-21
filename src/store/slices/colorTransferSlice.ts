@@ -14,7 +14,7 @@ export interface ColorTransferState {
   baseStats: ImageStats | null;
   baseGrading: GradingState | null;       // deep-cloned snapshot on modal open
   transferResult: ColorTransferResult | null;
-  strength: number;                       // 0.0 to 1.0, default 0.7
+  strength: number;                       // 0.0 to 1.0, default 0.14
 }
 
 const initialState: ColorTransferState = {
@@ -26,7 +26,7 @@ const initialState: ColorTransferState = {
   baseStats: null,
   baseGrading: null,
   transferResult: null,
-  strength: 0.7,
+  strength: 0.14,
 };
 
 export const colorTransferSlice = createSlice({
@@ -42,7 +42,7 @@ export const colorTransferSlice = createSlice({
       state.baseStats = null;
       state.baseGrading = JSON.parse(JSON.stringify(action.payload));
       state.transferResult = null;
-      state.strength = 0.7;
+      state.strength = 0.14;
     },
     closeModal: (state) => {
       state.isOpen = false;
@@ -53,7 +53,7 @@ export const colorTransferSlice = createSlice({
       state.baseStats = null;
       state.baseGrading = null;
       state.transferResult = null;
-      state.strength = 0.7;
+      state.strength = 0.14;
     },
     setReferenceStats: (state, action: PayloadAction<{ url: string; stats: ImageStats }>) => {
       state.referenceImageUrl = action.payload.url;
