@@ -41,7 +41,7 @@ const WheelsPanel: React.FC = () => {
       </div>
 
       {/* Sliders Grid */}
-      <div className="h-24 grid grid-cols-4 gap-x-12 gap-y-4 px-8 border-t border-[var(--border)]/30 pt-2">
+      <div className="h-24 flex gap-x-4 px-8 border-t border-[var(--border)]/30 pt-2 overflow-x-auto">
         <PerformanceSlider 
           label="Contrast" 
           min={-100} max={100} 
