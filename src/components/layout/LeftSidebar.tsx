@@ -44,7 +44,10 @@ const LeftSidebar: React.FC = () => {
   const offscreenCanvas = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
-    if (!originalUrl || allPresets.length === 0) return;
+    if (!originalUrl || allPresets.length === 0) {
+      setPreviews({});
+      return;
+    }
 
     // Create offscreen canvas once
     if (!offscreenCanvas.current) {

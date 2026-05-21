@@ -286,6 +286,20 @@ export class CanvasEngine {
     return { r, g, b };
   }
 
+  public clearImage() {
+    if (this._proxyTexture && this.gl) {
+      this.gl.deleteTexture(this._proxyTexture);
+      this._proxyTexture = null;
+    }
+    this._originalImage = null;
+    this._histogramProxyImageData = null;
+    this._lastParams = '';
+    this._needsRender = false;
+    if (this.gl && this.targetCanvas) {
+      this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+    }
+  }
+
   public render(params: GradingState) {
     if (!this.gl || !this.program || !this._proxyTexture) return;
 

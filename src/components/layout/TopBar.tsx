@@ -1,12 +1,12 @@
 import React, { useRef } from 'react';
-import { Undo2, Redo2, RotateCcw, Download, Menu, Wand2, Save, FolderOpen } from 'lucide-react';
+import { Undo2, Redo2, RotateCcw, Download, Menu, Wand2, Save, FolderOpen, X } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../store/store';
 import { undo, redo, resetHistory } from '../../store/slices/historySlice';
 import { applySnapshot, resetGrading } from '../../store/slices/gradingSlice';
 import { setExportModalOpen, toggleLeftSidebar } from '../../store/slices/uiSlice';
 import { openModal } from '../../store/slices/colorTransferSlice';
-import { setImage } from '../../store/slices/imageSlice';
+import { setImage, clearImage } from '../../store/slices/imageSlice';
 import { canvasEngine } from '../../lib/CanvasEngine';
 import { saveWorkspace, loadWorkspace, workspaceToObjectUrl } from '../../utils/workspaceIO';
 
@@ -131,6 +131,21 @@ const TopBar: React.FC = () => {
         >
           <RotateCcw size={14} />
           Reset
+        </button>
+        <button
+          onClick={() => {
+            if (!confirm('Clear the workspace? This will remove the current image and all grading.')) return;
+            canvasEngine.clearImage();
+            dispatch(clearImage());
+            dispatch(resetGrading());
+            dispatch(resetHistory());
+          }}
+          disabled={!hasImage}
+          className="flex items-center gap-1.5 px-3 py-1 hover:bg-[var(--bg-hover)] rounded text-xs font-medium text-[var(--accent-red,#f87171)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          title="Clear image"
+        >
+          <X size={14} />
+          Clear
         </button>
       </div>
 
