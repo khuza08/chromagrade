@@ -32,6 +32,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const rightWidthRef = useRef(initialRight);
   const bottomHeightRef = useRef(initialBottom);
   const containerRef = useRef<HTMLDivElement>(null);
+  const leftSidebarCollapsed = useSelector((state: RootState) => state.ui.leftSidebarCollapsed);
 
   const handleLeftResize = useCallback((delta: number) => {
     const next = Math.min(Math.max(leftWidthRef.current + delta, MIN_LEFT), MAX_LEFT);
@@ -42,6 +43,14 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const handleLeftResizeEnd = useCallback(() => {
     dispatch(setLeftSidebarWidth(leftWidthRef.current));
   }, [dispatch]);
+
+  // Apply collapsed/expanded width when toggle changes
+  React.useEffect(() => {
+    containerRef.current?.style.setProperty(
+      '--left-sidebar-width',
+      leftSidebarCollapsed ? '0px' : `${leftWidthRef.current}px`
+    );
+  }, [leftSidebarCollapsed]);
 
   const handleRightResize = useCallback((delta: number) => {
     const next = Math.min(Math.max(rightWidthRef.current - delta, MIN_RIGHT), MAX_RIGHT);
@@ -82,7 +91,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
           onResize={handleLeftResize} 
           onResizeEnd={handleLeftResizeEnd}
           className="border-r border-[var(--border)]" 
-          disabled={!hasImage}
+          disabled={!hasImage || leftSidebarCollapsed}
         />
         
         <main className="flex-1 flex flex-col relative overflow-hidden bg-black/20">

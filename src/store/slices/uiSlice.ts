@@ -30,6 +30,7 @@ interface UIState {
   leftSidebarWidth: number;
   rightSidebarWidth: number;
   bottomPanelHeight: number;
+  leftSidebarCollapsed: boolean;
 }
 
 const initialState: UIState = {
@@ -47,6 +48,7 @@ const initialState: UIState = {
   leftSidebarWidth: savedLayout?.leftSidebarWidth ?? 256,
   rightSidebarWidth: savedLayout?.rightSidebarWidth ?? 256,
   bottomPanelHeight: savedLayout?.bottomPanelHeight ?? 320,
+  leftSidebarCollapsed: false,
 };
 
 
@@ -91,6 +93,9 @@ export const uiSlice = createSlice({
     setLeftSidebarWidth: (state, action: PayloadAction<number>) => {
       state.leftSidebarWidth = action.payload;
     },
+    toggleLeftSidebar: (state) => {
+      state.leftSidebarCollapsed = !state.leftSidebarCollapsed;
+    },
     setRightSidebarWidth: (state, action: PayloadAction<number>) => {
       state.rightSidebarWidth = action.payload;
     },
@@ -114,7 +119,8 @@ export const {
   setActiveColorBin,
   setLeftSidebarWidth,
   setRightSidebarWidth,
-  setBottomPanelHeight
+  setBottomPanelHeight,
+  toggleLeftSidebar,
 } = uiSlice.actions;
 
 export default uiSlice.reducer;

@@ -1,17 +1,23 @@
-import React from 'react';
-import { Undo2, Redo2, RotateCcw, Download, Menu, Wand2 } from 'lucide-react';
+import React, { useRef } from 'react';
+import { Undo2, Redo2, RotateCcw, Download, Menu, Wand2, Save, FolderOpen } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../store/store';
 import { undo, redo, resetHistory } from '../../store/slices/historySlice';
 import { applySnapshot, resetGrading } from '../../store/slices/gradingSlice';
-import { setExportModalOpen } from '../../store/slices/uiSlice';
+import { setExportModalOpen, toggleLeftSidebar } from '../../store/slices/uiSlice';
 import { openModal } from '../../store/slices/colorTransferSlice';
+import { setImage } from '../../store/slices/imageSlice';
+import { canvasEngine } from '../../lib/CanvasEngine';
+import { saveWorkspace, loadWorkspace, workspaceToObjectUrl } from '../../utils/workspaceIO';
 
 const TopBar: React.FC = () => {
   const dispatch = useDispatch();
   const { past, future } = useSelector((state: RootState) => state.history);
   const currentGrading = useSelector((state: RootState) => state.grading);
   const hasImage = useSelector((state: RootState) => Boolean(state.image.originalUrl));
+  const originalUrl = useSelector((state: RootState) => state.image.originalUrl);
+  const fileName = useSelector((state: RootState) => state.image.fileName);
+  const workspaceInputRef = useRef<HTMLInputElement>(null);
 
   const handleUndo = () => {
     if (past.length > 0) {
@@ -29,19 +35,36 @@ const TopBar: React.FC = () => {
     }
   };
 
-  const handleMatchColor = () => {
-    dispatch(openModal(currentGrading));
+  const handleSaveWorkspace = async () => {
+    if (!originalUrl || !fileName) return;
+    try {
+      await saveWorkspace(originalUrl, fileName, currentGrading);
+    } catch (err) {
+      console.error('Failed to save workspace:', err);
+    }
   };
 
-  const handleReset = () => {
-    dispatch(resetGrading());
-    dispatch(resetHistory());
+  const handleLoadWorkspace = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+    try {
+      const workspace = await loadWorkspace(file);
+      const url = workspaceToObjectUrl(workspace);
+      const dimensions = await canvasEngine.loadImage(url);
+      dispatch(setImage({ url, width: dimensions.width, height: dimensions.height, name: workspace.fileName }));
+      dispatch(applySnapshot(workspace.gradingState));
+      dispatch(resetHistory());
+      canvasEngine.render(workspace.gradingState);
+    } catch (err: any) {
+      alert(err.message || 'Failed to load workspace');
+    }
   };
 
   return (
     <div className="h-12 bg-[var(--bg-panel)] border-b border-[var(--border)] flex items-center justify-between px-4 z-50">
       <div className="flex items-center gap-4">
-        <button className="p-1 hover:bg-[var(--bg-hover)] rounded text-[var(--text-secondary)]">
+        <button onClick={() => dispatch(toggleLeftSidebar())} className="p-1 hover:bg-[var(--bg-hover)] rounded text-[var(--text-secondary)]">
           <Menu size={20} />
         </button>
         <h1 className="text-sm font-bold tracking-tight text-[var(--theme-primary)]">
@@ -50,7 +73,7 @@ const TopBar: React.FC = () => {
       </div>
 
       <div className="flex items-center gap-2">
-        <button 
+        <button
           onClick={handleUndo}
           disabled={past.length === 0 || !hasImage}
           className="p-1.5 hover:bg-[var(--bg-hover)] rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
@@ -58,7 +81,7 @@ const TopBar: React.FC = () => {
         >
           <Undo2 size={18} />
         </button>
-        <button 
+        <button
           onClick={handleRedo}
           disabled={future.length === 0 || !hasImage}
           className="p-1.5 hover:bg-[var(--bg-hover)] rounded disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
@@ -67,8 +90,33 @@ const TopBar: React.FC = () => {
           <Redo2 size={18} />
         </button>
         <div className="w-[1px] h-4 bg-[var(--border)] mx-1" />
-        <button 
-          onClick={handleMatchColor}
+        <button
+          onClick={handleSaveWorkspace}
+          disabled={!hasImage}
+          className="flex items-center gap-1.5 px-3 py-1 hover:bg-[var(--bg-hover)] rounded text-xs font-medium text-[var(--text-secondary)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+          title="Save Workspace"
+        >
+          <Save size={14} />
+          Save
+        </button>
+        <button
+          onClick={() => workspaceInputRef.current?.click()}
+          className="flex items-center gap-1.5 px-3 py-1 hover:bg-[var(--bg-hover)] rounded text-xs font-medium text-[var(--text-secondary)] transition-colors"
+          title="Load Workspace"
+        >
+          <FolderOpen size={14} />
+          Load
+        </button>
+        <input
+          ref={workspaceInputRef}
+          type="file"
+          accept=".chromagrade-workspace"
+          className="hidden"
+          onChange={handleLoadWorkspace}
+        />
+        <div className="w-[1px] h-4 bg-[var(--border)] mx-1" />
+        <button
+          onClick={() => dispatch(openModal(currentGrading))}
           disabled={!hasImage}
           className="flex items-center gap-1.5 px-3 py-1 hover:bg-[var(--bg-hover)] rounded text-xs font-medium text-[var(--text-secondary)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
           title="Match Color"
@@ -76,8 +124,8 @@ const TopBar: React.FC = () => {
           <Wand2 size={14} />
           Match Color
         </button>
-        <button 
-          onClick={handleReset}
+        <button
+          onClick={() => { dispatch(resetGrading()); dispatch(resetHistory()); }}
           disabled={!hasImage}
           className="flex items-center gap-1.5 px-3 py-1 hover:bg-[var(--bg-hover)] rounded text-xs font-medium text-[var(--text-secondary)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
         >
@@ -87,7 +135,7 @@ const TopBar: React.FC = () => {
       </div>
 
       <div className="flex items-center">
-        <button 
+        <button
           onClick={() => dispatch(setExportModalOpen(true))}
           disabled={!hasImage}
           className="flex items-center gap-2 bg-[var(--theme-primary)] hover:opacity-90 active:scale-95 text-white px-4 py-1.5 rounded text-xs font-semibold transition-all shadow-lg shadow-black/20 disabled:opacity-30 disabled:cursor-not-allowed disabled:scale-100"
