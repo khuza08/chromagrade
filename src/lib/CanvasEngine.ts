@@ -493,6 +493,10 @@ export class CanvasEngine {
     return pixels;
   }
 
+  public getProxyImageData(): ImageData | null {
+    return this._histogramProxyImageData;
+  }
+
   public exportHighRes(params: GradingState): HTMLCanvasElement {
     if (!this._originalImage) throw new Error('No image loaded');
 

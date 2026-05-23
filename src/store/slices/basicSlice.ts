@@ -22,6 +22,7 @@ export interface BasicState {
   sdrShadows: number;
   sdrWhites: number;
   sdrHighlightSat: number;
+  wbPreset: 'as-shot' | 'auto' | 'custom';
 }
 
 const initialState: BasicState = {
@@ -46,6 +47,7 @@ const initialState: BasicState = {
   sdrShadows: 0,
   sdrWhites: 0,
   sdrHighlightSat: 0,
+  wbPreset: 'as-shot',
 };
 
 export const basicSlice = createSlice({
@@ -115,6 +117,9 @@ export const basicSlice = createSlice({
     setSdrHighlightSat: (state, action: PayloadAction<number>) => {
       state.sdrHighlightSat = action.payload;
     },
+    setWbPreset: (state, action: PayloadAction<BasicState['wbPreset']>) => {
+      state.wbPreset = action.payload;
+    },
     resetBasic: () => initialState,
     applyBasicSnapshot: (state, action: PayloadAction<Partial<BasicState>>) => {
       return { ...state, ...action.payload };
@@ -144,6 +149,7 @@ export const {
   setSdrShadows,
   setSdrWhites,
   setSdrHighlightSat,
+  setWbPreset,
   resetBasic,
   applyBasicSnapshot,
 } = basicSlice.actions;
