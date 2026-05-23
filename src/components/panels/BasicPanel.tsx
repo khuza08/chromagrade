@@ -57,7 +57,12 @@ const BasicPanel: React.FC = () => {
           Auto
         </button>
         <button
-          onClick={() => dispatch(setBw(!basic.bw))}
+          onClick={() => {
+            const next = !basic.bw;
+            dispatch(setBw(next));
+            dispatch(setProfile(next ? "Monochrome" : "Color"));
+            dispatch(setSaturation(next ? -100 : 0));
+          }}
           className={`px-3 py-1 rounded-full text-[10px] font-bold border ${basic.bw ? "bg-[var(--theme-primary)] text-white border-transparent" : "border-[var(--border)] hover:bg-[var(--bg-hover)]"}`}
         >
           B&W
@@ -77,12 +82,15 @@ const BasicPanel: React.FC = () => {
         </span>
         <select
           value={basic.profile}
-          onChange={(e) => dispatch(setProfile(e.target.value))}
+          onChange={(e) => {
+            const mono = e.target.value === "Monochrome";
+            dispatch(setProfile(e.target.value));
+            dispatch(setBw(mono));
+            dispatch(setSaturation(mono ? -100 : 0));
+          }}
           className="bg-[var(--bg-control)] text-[10px] border border-[var(--border)] rounded px-2 py-1 outline-none focus:border-[var(--theme-primary)]"
         >
-          <option value="Adobe Color">Adobe Color</option>
           <option value="Color">Color</option>
-          <option value="Camera Standard">Camera Standard</option>
           <option value="Monochrome">Monochrome</option>
         </select>
       </div>
