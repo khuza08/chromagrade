@@ -6,7 +6,7 @@ import { setImage } from '../../store/slices/imageSlice';
 import { canvasEngine } from '../../lib/CanvasEngine';
 import { setPickerActive } from '../../store/slices/uiSlice';
 import { setCurvePoints } from '../../store/slices/gradingSlice';
-import { Upload, Maximize, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import { Upload, Maximize, ZoomIn, ZoomOut, RotateCcw, RotateCw } from 'lucide-react';
 import TargetOverlay from './TargetOverlay';
 import { extractPalette } from '../../utils/vibrant';
 import { useTheme } from '../../context/ThemeContext';
@@ -25,6 +25,7 @@ const CanvasViewer: React.FC = () => {
   const gradingParams = useSelector((state: RootState) => state.grading);
   const [zoom, setZoom] = useState(1.0);
   const [pan, setPan] = useState({ x: 0, y: 0 });
+  const [rotation, setRotation] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const dragStart = useRef({ x: 0, y: 0 });
@@ -278,7 +279,7 @@ const CanvasViewer: React.FC = () => {
         className="object-contain shadow-2xl shadow-black/50 transition-shadow duration-300"
         style={{ 
           display: originalUrl ? 'block' : 'none',
-          transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
+          transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom}) rotate(${rotation}deg)`,
           transition: isDragging ? 'none' : 'transform 0.2s cubic-bezier(0.2, 0, 0, 1)',
           imageRendering: zoom > 1.0 ? 'pixelated' : 'auto',
           cursor: isPickerActive ? 'crosshair' : isDragging ? 'grabbing' : 'grab',
@@ -341,6 +342,22 @@ const CanvasViewer: React.FC = () => {
                 <span className="text-amber-400 normal-case">⚠ Preview quality</span>
               </>
             )}
+          </div>
+          <div className="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+            <button
+              onClick={() => setRotation(r => (r - 90 + 360) % 360)}
+              className="p-2 bg-[var(--bg-panel)]/20 hover:bg-[var(--bg-panel)]/20 rounded-lg safari-blur text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all border border-[var(--border)]"
+              title="Rotate left"
+            >
+              <RotateCcw size={18} />
+            </button>
+            <button
+              onClick={() => setRotation(r => (r + 90) % 360)}
+              className="p-2 bg-[var(--bg-panel)]/20 hover:bg-[var(--bg-panel)]/20 rounded-lg safari-blur text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all border border-[var(--border)]"
+              title="Rotate right"
+            >
+              <RotateCw size={18} />
+            </button>
           </div>
         </>
       )}
