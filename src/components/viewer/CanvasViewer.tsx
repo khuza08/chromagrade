@@ -19,7 +19,7 @@ const CanvasViewer: React.FC = () => {
   const { applyPalette } = useTheme();
   const { originalUrl, dimensions, fileName } = useSelector((state: RootState) => state.image);
   const previewWarning = useSelector((state: RootState) => state.image.previewWarning);
-  const { activeBottomTab, isPickerActive } = useSelector((state: RootState) => state.ui);
+  const { isPickerActive } = useSelector((state: RootState) => state.ui);
   const viewportResetToken = useSelector((state: RootState) => state.ui.viewportResetToken);
   const { curves } = useSelector((state: RootState) => state.grading);
   const gradingParams = useSelector((state: RootState) => state.grading);
@@ -191,11 +191,9 @@ const CanvasViewer: React.FC = () => {
       value = pixel[2] / 255;
     }
     
-    if (activeBottomTab === 'curves') {
-      const currentPoints = curves[activeCurveChannel];
-      const newPoints = [...currentPoints, { x: value, y: value }].sort((a, b) => a.x - b.x);
-      dispatch(setCurvePoints({ channel: activeCurveChannel, points: newPoints }));
-    }
+    const currentPoints = curves[activeCurveChannel];
+    const newPoints = [...currentPoints, { x: value, y: value }].sort((a, b) => a.x - b.x);
+    dispatch(setCurvePoints({ channel: activeCurveChannel, points: newPoints }));
 
     dispatch(setPickerActive(false));
   };

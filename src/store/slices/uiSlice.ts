@@ -16,7 +16,6 @@ const loadLayout = () => {
 const savedLayout = loadLayout();
 
 interface UIState {
-  activeBottomTab: 'wheels' | 'curves' | 'hsl' | 'lut' | 'ai' | 'presets';
   zoom: number;
   showBeforeAfter: boolean;
   isExportModalOpen: boolean;
@@ -29,13 +28,11 @@ interface UIState {
   activeColorBin: keyof HSLState;
   leftSidebarWidth: number;
   rightSidebarWidth: number;
-  bottomPanelHeight: number;
   leftSidebarCollapsed: boolean;
-  viewportResetToken: number; // increment to trigger viewport reset in CanvasViewer
+  viewportResetToken: number;
 }
 
 const initialState: UIState = {
-  activeBottomTab: 'wheels',
   zoom: 1,
   showBeforeAfter: false,
   isExportModalOpen: false,
@@ -48,19 +45,14 @@ const initialState: UIState = {
   activeColorBin: 'red',
   leftSidebarWidth: savedLayout?.leftSidebarWidth ?? 256,
   rightSidebarWidth: savedLayout?.rightSidebarWidth ?? 256,
-  bottomPanelHeight: savedLayout?.bottomPanelHeight ?? 320,
   leftSidebarCollapsed: false,
   viewportResetToken: 0,
 };
-
 
 export const uiSlice = createSlice({
   name: 'ui',
   initialState,
   reducers: {
-    setTab: (state, action: PayloadAction<UIState['activeBottomTab']>) => {
-      state.activeBottomTab = action.payload;
-    },
     setZoom: (state, action: PayloadAction<number>) => {
       state.zoom = action.payload;
     },
@@ -104,17 +96,13 @@ export const uiSlice = createSlice({
     setRightSidebarWidth: (state, action: PayloadAction<number>) => {
       state.rightSidebarWidth = action.payload;
     },
-    setBottomPanelHeight: (state, action: PayloadAction<number>) => {
-      state.bottomPanelHeight = action.payload;
-    },
   },
 });
 
-export const { 
-  setTab, 
-  setZoom, 
-  toggleBeforeAfter, 
-  setExportModalOpen, 
+export const {
+  setZoom,
+  toggleBeforeAfter,
+  setExportModalOpen,
   setPickerActive,
   setActiveCurveChannel,
   setActiveHslAttribute,
@@ -124,10 +112,8 @@ export const {
   setActiveColorBin,
   setLeftSidebarWidth,
   setRightSidebarWidth,
-  setBottomPanelHeight,
   toggleLeftSidebar,
   resetViewport,
 } = uiSlice.actions;
 
 export default uiSlice.reducer;
-

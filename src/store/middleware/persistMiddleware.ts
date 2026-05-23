@@ -7,7 +7,6 @@ const PRESET_STORAGE_KEY = 'chromagrade_user_presets';
 const LAYOUT_ACTIONS = [
   'ui/setLeftSidebarWidth',
   'ui/setRightSidebarWidth',
-  'ui/setBottomPanelHeight'
 ];
 
 const PRESET_ACTIONS = [
@@ -25,7 +24,6 @@ export const persistMiddleware: Middleware = (store) => (next) => (action: any) 
       localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify({
         leftSidebarWidth: state.leftSidebarWidth,
         rightSidebarWidth: state.rightSidebarWidth,
-        bottomPanelHeight: state.bottomPanelHeight,
       }));
     } catch (e) {
       console.error('Failed to save layout to localStorage', e);
