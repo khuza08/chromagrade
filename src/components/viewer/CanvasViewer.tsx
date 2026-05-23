@@ -10,6 +10,7 @@ import { Upload, Maximize, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import TargetOverlay from './TargetOverlay';
 import { extractPalette } from '../../utils/vibrant';
 import { useTheme } from '../../context/ThemeContext';
+import { extractPreview } from '../../lib/rawLoader';
 
 const CanvasViewer: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -17,6 +18,7 @@ const CanvasViewer: React.FC = () => {
   const dispatch = useDispatch();
   const { applyPalette } = useTheme();
   const { originalUrl, dimensions, fileName } = useSelector((state: RootState) => state.image);
+  const previewWarning = useSelector((state: RootState) => state.image.previewWarning);
   const { activeBottomTab, isPickerActive } = useSelector((state: RootState) => state.ui);
   const viewportResetToken = useSelector((state: RootState) => state.ui.viewportResetToken);
   const { curves } = useSelector((state: RootState) => state.grading);
@@ -203,25 +205,26 @@ const CanvasViewer: React.FC = () => {
   };
 
   const handleFileUpload = async (file: File) => {
-    if (!file.type.startsWith('image/')) return;
-    const url = URL.createObjectURL(file);
+    const RAW_EXTENSIONS = ['arw', 'cr2', 'cr3', 'nef', 'orf', 'raf', 'rw2', 'dng'];
+    const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+    const isRaw = RAW_EXTENSIONS.includes(ext);
+    if (!file.type.startsWith('image/') && !isRaw) return;
+
+    let url: string;
+    let previewWarning: string | null = null;
+
+    if (isRaw) {
+      const { blob, previewWarning: warning } = await extractPreview(file);
+      url = URL.createObjectURL(blob);
+      previewWarning = warning;
+    } else {
+      url = URL.createObjectURL(file);
+    }
+
     const dimensions = await canvasEngine.loadImage(url);
-    
-    dispatch(setImage({
-      url,
-      width: dimensions.width,
-      height: dimensions.height,
-      name: file.name,
-    }));
-    
+    dispatch(setImage({ url, width: dimensions.width, height: dimensions.height, name: file.name, previewWarning }));
     canvasEngine.render(gradingParams);
-    
-    // Defer zoom calculation slightly to ensure DOM has updated canvas dimensions
-    setTimeout(() => {
-      const fit = calculateFitZoom();
-      setZoom(fit);
-      setPan({ x: 0, y: 0 });
-    }, 50);
+    setTimeout(() => { const fit = calculateFitZoom(); setZoom(fit); setPan({ x: 0, y: 0 }); }, 50);
   };
 
   const onDrop = (e: React.DragEvent) => {
@@ -260,7 +263,7 @@ const CanvasViewer: React.FC = () => {
               <input
                 type="file"
                 className="hidden"
-                accept="image/*"
+                accept="image/*,.arw,.cr2,.cr3,.nef,.orf,.raf,.rw2,.dng"
                 onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
               />
             </label>
@@ -332,6 +335,12 @@ const CanvasViewer: React.FC = () => {
             <span>{dimensions ? `${dimensions.width}x${dimensions.height}` : '0x0'}</span>
             <span className="opacity-30">•</span>
             <span>sRGB</span>
+            {previewWarning && (
+              <>
+                <span className="opacity-30">•</span>
+                <span className="text-amber-400 normal-case">⚠ Preview quality</span>
+              </>
+            )}
           </div>
         </>
       )}
