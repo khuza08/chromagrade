@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../store/store';
 import { undo, redo, resetHistory } from '../../store/slices/historySlice';
 import { applySnapshot, resetGrading } from '../../store/slices/gradingSlice';
+import { applyBasicSnapshot } from '../../store/slices/basicSlice';
 import { setExportModalOpen, toggleLeftSidebar, resetViewport } from '../../store/slices/uiSlice';
 import { openModal } from '../../store/slices/colorTransferSlice';
 import { setImage, clearImage } from '../../store/slices/imageSlice';
@@ -14,6 +15,7 @@ const TopBar: React.FC = () => {
   const dispatch = useDispatch();
   const { past, future } = useSelector((state: RootState) => state.history);
   const currentGrading = useSelector((state: RootState) => state.grading);
+  const currentBasic = useSelector((state: RootState) => state.basic);
   const hasImage = useSelector((state: RootState) => Boolean(state.image.originalUrl));
   const originalUrl = useSelector((state: RootState) => state.image.originalUrl);
   const fileName = useSelector((state: RootState) => state.image.fileName);
@@ -38,7 +40,7 @@ const TopBar: React.FC = () => {
   const handleSaveWorkspace = async () => {
     if (!originalUrl || !fileName) return;
     try {
-      await saveWorkspace(originalUrl, fileName, currentGrading);
+      await saveWorkspace(originalUrl, fileName, currentGrading, currentBasic);
     } catch (err) {
       console.error('Failed to save workspace:', err);
     }
@@ -54,6 +56,7 @@ const TopBar: React.FC = () => {
       const dimensions = await canvasEngine.loadImage(url);
       dispatch(setImage({ url, width: dimensions.width, height: dimensions.height, name: workspace.fileName }));
       dispatch(applySnapshot(workspace.gradingState));
+      if (workspace.basicState) dispatch(applyBasicSnapshot(workspace.basicState));
       dispatch(resetHistory());
       dispatch(resetViewport());
       canvasEngine.render(workspace.gradingState);

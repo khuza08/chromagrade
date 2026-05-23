@@ -4,6 +4,7 @@ import type { RootState } from '../../store/store';
 import { addPreset, deletePreset, importPresets } from '../../store/slices/presetsSlice';
 import type { Preset } from '../../store/slices/presetsSlice';
 import { applyPartialSnapshot } from '../../store/slices/gradingSlice';
+import { applyBasicSnapshot } from '../../store/slices/basicSlice';
 import type { GradingState } from '../../store/slices/gradingSlice';
 import PresetCard from '../ui/PresetCard';
 import { exportPresets, importPresets as readPresetsFile } from '../../utils/presetIO';
@@ -59,6 +60,7 @@ const IDPresetsPanel: React.FC = () => {
   const dispatch = useDispatch();
   const { prebuiltPresets, userPresets } = useSelector((state: RootState) => state.presets);
   const currentGrading = useSelector((state: RootState) => state.grading);
+  const currentBasic = useSelector((state: RootState) => state.basic);
   
   const [activeCategory, setActiveCategory] = useState<string>('All');
   const [isSaving, setIsSaving] = useState<boolean>(false);
@@ -104,6 +106,7 @@ const IDPresetsPanel: React.FC = () => {
     } else {
       // Single select and apply grade
       dispatch(applyPartialSnapshot(preset.parameters));
+      if (preset.basicParameters) dispatch(applyBasicSnapshot(preset.basicParameters as any));
       setSelectedPresetIds(new Set([preset.id]));
     }
   };
@@ -133,7 +136,8 @@ const IDPresetsPanel: React.FC = () => {
         primary: JSON.parse(JSON.stringify(currentGrading.primary)),
         curves: JSON.parse(JSON.stringify(currentGrading.curves)),
         hsl: JSON.parse(JSON.stringify(currentGrading.hsl)),
-      }
+      },
+      basicParameters: JSON.parse(JSON.stringify(currentBasic)),
     };
 
     dispatch(addPreset(newPreset));

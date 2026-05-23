@@ -1,6 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 import type { GradingState } from './gradingSlice';
+import type { BasicState } from './basicSlice';
 import { prebuiltPresets } from '../../data/presets/builtinPresets';
 
 export interface Preset {
@@ -8,6 +9,7 @@ export interface Preset {
   name: string;
   category: string;
   parameters: Partial<GradingState>;
+  basicParameters?: Partial<BasicState>;
 }
 
 interface PresetsState {

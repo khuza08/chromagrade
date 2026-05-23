@@ -1,5 +1,5 @@
 import React from 'react';
-import { BarChart2, Activity, Circle, Sliders, Pipette, Palette, Sparkles, Map } from 'lucide-react';
+import { BarChart2, Activity, Circle, Sliders, Pipette, Palette, Sparkles, Map, SlidersHorizontal } from 'lucide-react';
 import { useSelector } from 'react-redux';
 import type { RootState } from '../../store/store';
 import EmptyStateOverlay from '../ui/EmptyStateOverlay';
@@ -9,6 +9,7 @@ import WheelsPanel from '../panels/WheelsPanel';
 import CurvesPanel from '../panels/CurvesPanel';
 import HSLPanel from '../panels/HSLPanel';
 import IDPresetsPanel from '../panels/IDPresetsPanel';
+import BasicPanel from '../panels/BasicPanel';
 
 const ComingSoon = () => (
   <div className="p-4 text-sm text-[var(--text-secondary)] italic">Coming soon...</div>
@@ -42,6 +43,9 @@ const RightSidebar: React.FC = () => {
     >
       <EmptyStateOverlay />
       <div className="flex-1 overflow-y-auto">
+        <AccordionSection title="Basic" icon={SlidersHorizontal}>
+          <BasicPanel />
+        </AccordionSection>
         <AccordionSection title="Histogram" icon={BarChart2} defaultOpen>
           <div className="p-4"><Histogram /></div>
         </AccordionSection>
