@@ -1,4 +1,4 @@
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, type PayloadAction } from "@reduxjs/toolkit";
 
 export interface BasicState {
   exposure: number;
@@ -33,7 +33,7 @@ const initialState: BasicState = {
   texture: 0,
   clarity: 0,
   dehaze: 0,
-  profile: 'Adobe Color',
+  profile: "Color",
   bw: false,
   hdr: false,
   hdrLimit: 4,
@@ -49,30 +49,72 @@ const initialState: BasicState = {
 };
 
 export const basicSlice = createSlice({
-  name: 'basic',
+  name: "basic",
   initialState,
   reducers: {
-    setExposure: (state, action: PayloadAction<number>) => { state.exposure = action.payload; },
-    setToneHighlights: (state, action: PayloadAction<number>) => { state.toneHighlights = action.payload; },
-    setToneShadows: (state, action: PayloadAction<number>) => { state.toneShadows = action.payload; },
-    setWhites: (state, action: PayloadAction<number>) => { state.whites = action.payload; },
-    setBlacks: (state, action: PayloadAction<number>) => { state.blacks = action.payload; },
-    setTexture: (state, action: PayloadAction<number>) => { state.texture = action.payload; },
-    setClarity: (state, action: PayloadAction<number>) => { state.clarity = action.payload; },
-    setDehaze: (state, action: PayloadAction<number>) => { state.dehaze = action.payload; },
-    setProfile: (state, action: PayloadAction<string>) => { state.profile = action.payload; },
-    setBw: (state, action: PayloadAction<boolean>) => { state.bw = action.payload; },
-    setHdr: (state, action: PayloadAction<boolean>) => { state.hdr = action.payload; },
-    setHdrLimit: (state, action: PayloadAction<number>) => { state.hdrLimit = action.payload; },
-    setVisualizeHdr: (state, action: PayloadAction<boolean>) => { state.visualizeHdr = action.payload; },
-    setSdrPreview: (state, action: PayloadAction<boolean>) => { state.sdrPreview = action.payload; },
-    setSdrBrightness: (state, action: PayloadAction<number>) => { state.sdrBrightness = action.payload; },
-    setSdrContrast: (state, action: PayloadAction<number>) => { state.sdrContrast = action.payload; },
-    setSdrClarity: (state, action: PayloadAction<number>) => { state.sdrClarity = action.payload; },
-    setSdrHighlights: (state, action: PayloadAction<number>) => { state.sdrHighlights = action.payload; },
-    setSdrShadows: (state, action: PayloadAction<number>) => { state.sdrShadows = action.payload; },
-    setSdrWhites: (state, action: PayloadAction<number>) => { state.sdrWhites = action.payload; },
-    setSdrHighlightSat: (state, action: PayloadAction<number>) => { state.sdrHighlightSat = action.payload; },
+    setExposure: (state, action: PayloadAction<number>) => {
+      state.exposure = action.payload;
+    },
+    setToneHighlights: (state, action: PayloadAction<number>) => {
+      state.toneHighlights = action.payload;
+    },
+    setToneShadows: (state, action: PayloadAction<number>) => {
+      state.toneShadows = action.payload;
+    },
+    setWhites: (state, action: PayloadAction<number>) => {
+      state.whites = action.payload;
+    },
+    setBlacks: (state, action: PayloadAction<number>) => {
+      state.blacks = action.payload;
+    },
+    setTexture: (state, action: PayloadAction<number>) => {
+      state.texture = action.payload;
+    },
+    setClarity: (state, action: PayloadAction<number>) => {
+      state.clarity = action.payload;
+    },
+    setDehaze: (state, action: PayloadAction<number>) => {
+      state.dehaze = action.payload;
+    },
+    setProfile: (state, action: PayloadAction<string>) => {
+      state.profile = action.payload;
+    },
+    setBw: (state, action: PayloadAction<boolean>) => {
+      state.bw = action.payload;
+    },
+    setHdr: (state, action: PayloadAction<boolean>) => {
+      state.hdr = action.payload;
+    },
+    setHdrLimit: (state, action: PayloadAction<number>) => {
+      state.hdrLimit = action.payload;
+    },
+    setVisualizeHdr: (state, action: PayloadAction<boolean>) => {
+      state.visualizeHdr = action.payload;
+    },
+    setSdrPreview: (state, action: PayloadAction<boolean>) => {
+      state.sdrPreview = action.payload;
+    },
+    setSdrBrightness: (state, action: PayloadAction<number>) => {
+      state.sdrBrightness = action.payload;
+    },
+    setSdrContrast: (state, action: PayloadAction<number>) => {
+      state.sdrContrast = action.payload;
+    },
+    setSdrClarity: (state, action: PayloadAction<number>) => {
+      state.sdrClarity = action.payload;
+    },
+    setSdrHighlights: (state, action: PayloadAction<number>) => {
+      state.sdrHighlights = action.payload;
+    },
+    setSdrShadows: (state, action: PayloadAction<number>) => {
+      state.sdrShadows = action.payload;
+    },
+    setSdrWhites: (state, action: PayloadAction<number>) => {
+      state.sdrWhites = action.payload;
+    },
+    setSdrHighlightSat: (state, action: PayloadAction<number>) => {
+      state.sdrHighlightSat = action.payload;
+    },
     resetBasic: () => initialState,
     applyBasicSnapshot: (state, action: PayloadAction<Partial<BasicState>>) => {
       return { ...state, ...action.payload };
@@ -81,11 +123,29 @@ export const basicSlice = createSlice({
 });
 
 export const {
-  setExposure, setToneHighlights, setToneShadows, setWhites, setBlacks,
-  setTexture, setClarity, setDehaze, setProfile, setBw, setHdr,
-  setHdrLimit, setVisualizeHdr, setSdrPreview, setSdrBrightness,
-  setSdrContrast, setSdrClarity, setSdrHighlights, setSdrShadows,
-  setSdrWhites, setSdrHighlightSat, resetBasic, applyBasicSnapshot
+  setExposure,
+  setToneHighlights,
+  setToneShadows,
+  setWhites,
+  setBlacks,
+  setTexture,
+  setClarity,
+  setDehaze,
+  setProfile,
+  setBw,
+  setHdr,
+  setHdrLimit,
+  setVisualizeHdr,
+  setSdrPreview,
+  setSdrBrightness,
+  setSdrContrast,
+  setSdrClarity,
+  setSdrHighlights,
+  setSdrShadows,
+  setSdrWhites,
+  setSdrHighlightSat,
+  resetBasic,
+  applyBasicSnapshot,
 } = basicSlice.actions;
 
 export default basicSlice.reducer;
