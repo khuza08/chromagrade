@@ -57,20 +57,21 @@ void main() {
   vec4 texColor = texture(u_texture, flippedCoord);
   vec3 color = texColor.rgb;
 
-  // 1. Temperature & Tint
+  // Temperature & Tint — simple linear channel shift
   color.r += u_temperature;
+  color.g -= u_tint;
   color.b -= u_temperature;
-  color.g += u_tint;
+  color = clamp(color, 0.0, 1.0);
 
   // 2. Shadows (Lift): color + (u_shadows * (1.0 - color))
   color = color + (u_shadows * (1.0 - color));
-  
+
   // 3. Midtones (Gamma): pow(color, 1.0 / u_midtones)
   color = max(color, 0.0);
   color.r = pow(color.r, 1.0 / max(u_midtones.r, 0.01));
   color.g = pow(color.g, 1.0 / max(u_midtones.g, 0.01));
   color.b = pow(color.b, 1.0 / max(u_midtones.b, 0.01));
-  
+
   // 4. Highlights (Gain): color * u_highlights
   color = color * u_highlights;
 
@@ -117,27 +118,27 @@ void main() {
   // 9. HSL Adjustments
   vec3 hsv = rgb2hsv(color);
   float h = hsv.x;
-  
+
   float hShift = texture(u_hslHue, vec2(h, 0.5)).r * 2.0 - 1.0;
   float sShift = texture(u_hslSat, vec2(h, 0.5)).r * 2.0 - 1.0;
   float lShift = texture(u_hslLum, vec2(h, 0.5)).r * 2.0 - 1.0;
-  
+
   hsv.x = fract(hsv.x + hShift * 0.15); // Scale hue shift to +/- 54 degrees
   hsv.y = clamp(hsv.y + sShift, 0.0, 1.0);
   hsv.z = clamp(hsv.z + lShift, 0.0, 1.0);
-  
+
   color = hsv2rgb(hsv);
 
   // Final Clamping
   color = clamp(color, 0.0, 1.0);
-  
+
   // Clipping Overlays
   if (u_showShadowClipping && color.r <= 0.001 && color.g <= 0.001 && color.b <= 0.001) {
     color = vec3(0.0, 0.0, 1.0); // Blue
   } else if (u_showHighlightClipping && color.r >= 0.999 && color.g >= 0.999 && color.b >= 0.999) {
     color = vec3(1.0, 0.0, 0.0); // Red
   }
-  
+
   outColor = vec4(color, texColor.a);
 }
 `;
