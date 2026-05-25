@@ -1,39 +1,72 @@
-import React from 'react';
-import { BarChart2, Activity, Circle, Sliders, Pipette, Palette, Sparkles, Map, SlidersHorizontal } from 'lucide-react';
-import { useSelector } from 'react-redux';
-import type { RootState } from '../../store/store';
-import EmptyStateOverlay from '../ui/EmptyStateOverlay';
-import AccordionSection from '../ui/AccordionSection';
-import Histogram from '../ui/Histogram';
-import WheelsPanel from '../panels/WheelsPanel';
-import CurvesPanel from '../panels/CurvesPanel';
-import HSLPanel from '../panels/HSLPanel';
-import IDPresetsPanel from '../panels/IDPresetsPanel';
-import BasicPanel from '../panels/BasicPanel';
+import React from "react";
+import {
+  BarChart2,
+  Activity,
+  Circle,
+  Sliders,
+  Pipette,
+  Palette,
+  Sparkles,
+  Map,
+  SlidersHorizontal,
+} from "lucide-react";
+import { useSelector } from "react-redux";
+import type { RootState } from "../../store/store";
+import EmptyStateOverlay from "../ui/EmptyStateOverlay";
+import AccordionSection from "../ui/AccordionSection";
+import Histogram from "../ui/Histogram";
+import WheelsPanel from "../panels/WheelsPanel";
+import CurvesPanel from "../panels/CurvesPanel";
+import HSLPanel from "../panels/HSLPanel";
+import IDPresetsPanel from "../panels/IDPresetsPanel";
+import BasicPanel from "../panels/BasicPanel";
 
 const ComingSoon = () => (
-  <div className="p-4 text-sm text-[var(--text-secondary)] italic">Coming soon...</div>
+  <div className="p-4 text-sm text-[var(--text-secondary)] italic">
+    Coming soon...
+  </div>
 );
 
 const ParadePlaceholder = () => (
   <div className="p-4">
     <div className="h-32 bg-[var(--bg-control)] rounded border border-[var(--border)] flex items-center justify-center p-2 gap-2">
       <div className="flex-1 h-full flex items-end gap-[1px]">
-        {[...Array(12)].map((_, i) => <div key={i} className="flex-1 bg-[var(--curve-r)] opacity-30" style={{ height: '60%' }} />)}
+        {[...Array(12)].map((_, i) => (
+          <div
+            key={i}
+            className="flex-1 bg-[var(--curve-r)] opacity-30"
+            style={{ height: "60%" }}
+          />
+        ))}
       </div>
       <div className="flex-1 h-full flex items-end gap-[1px]">
-        {[...Array(12)].map((_, i) => <div key={i} className="flex-1 bg-[var(--curve-g)] opacity-30" style={{ height: '40%' }} />)}
+        {[...Array(12)].map((_, i) => (
+          <div
+            key={i}
+            className="flex-1 bg-[var(--curve-g)] opacity-30"
+            style={{ height: "40%" }}
+          />
+        ))}
       </div>
       <div className="flex-1 h-full flex items-end gap-[1px]">
-        {[...Array(12)].map((_, i) => <div key={i} className="flex-1 bg-[var(--curve-b)] opacity-30" style={{ height: '70%' }} />)}
+        {[...Array(12)].map((_, i) => (
+          <div
+            key={i}
+            className="flex-1 bg-[var(--curve-b)] opacity-30"
+            style={{ height: "70%" }}
+          />
+        ))}
       </div>
     </div>
   </div>
 );
 
 const RightSidebar: React.FC = () => {
-  const width = 'var(--right-sidebar-width)';
-  const hasImage = useSelector((state: RootState) => Boolean(state.image.originalUrl), (a, b) => a === b);
+  const width = "var(--right-sidebar-width)";
+  const hasImage = useSelector(
+    (state: RootState) => Boolean(state.image.originalUrl),
+    (a, b) => a === b,
+  );
 
   return (
     <div
@@ -43,11 +76,13 @@ const RightSidebar: React.FC = () => {
     >
       <EmptyStateOverlay />
       <div className="flex-1 overflow-y-auto">
+        <AccordionSection title="Histogram" icon={BarChart2} defaultOpen>
+          <div className="p-4">
+            <Histogram />
+          </div>
+        </AccordionSection>
         <AccordionSection title="Basic" icon={SlidersHorizontal}>
           <BasicPanel />
-        </AccordionSection>
-        <AccordionSection title="Histogram" icon={BarChart2} defaultOpen>
-          <div className="p-4"><Histogram /></div>
         </AccordionSection>
         <AccordionSection title="Parade" icon={Activity}>
           <ParadePlaceholder />
