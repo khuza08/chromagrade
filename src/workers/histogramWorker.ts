@@ -95,19 +95,11 @@ self.onmessage = (e: MessageEvent) => {
       let g = data[i + 1] / 255;
       let b = data[i + 2] / 255;
 
-      // Exposure — EV-based, linear light, no tone-mapping (matches Lightroom behavior)
-      let linR = Math.pow(Math.max(r, 0.0001), 2.2);
-      let linG = Math.pow(Math.max(g, 0.0001), 2.2);
-      let linB = Math.pow(Math.max(b, 0.0001), 2.2);
-
-      const expMultiplier = Math.pow(2.0, params.exposure);
-      linR *= expMultiplier;
-      linG *= expMultiplier;
-      linB *= expMultiplier;
-
-      r = Math.pow(Math.min(1.0, Math.max(0.0, linR)), 1.0 / 2.2);
-      g = Math.pow(Math.min(1.0, Math.max(0.0, linG)), 1.0 / 2.2);
-      b = Math.pow(Math.min(1.0, Math.max(0.0, linB)), 1.0 / 2.2);
+      // Exposure — EV-based, gamma space (matches WebGL shader)
+      const evMult = Math.pow(2.0, params.exposure);
+      r = Math.min(1.0, Math.max(0.0, r * evMult));
+      g = Math.min(1.0, Math.max(0.0, g * evMult));
+      b = Math.min(1.0, Math.max(0.0, b * evMult));
 
       // 1. Temperature & Tint
       r += params.temperature;

@@ -49,7 +49,7 @@ export async function extractPreview(file: File): Promise<{ blob: Blob; previewW
   const jpegBytes = findLargestJpeg(buffer);
   if (!jpegBytes) throw new Error('No embedded JPEG preview found in RAW file');
 
-  const blob = new Blob([jpegBytes], { type: 'image/jpeg' });
+  const blob = new Blob([jpegBytes as BlobPart], { type: 'image/jpeg' });
 
   let previewWarning: string | null = null;
   if (sensorW > 0 && sensorH > 0) {

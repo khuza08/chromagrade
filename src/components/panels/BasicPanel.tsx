@@ -26,7 +26,6 @@ import {
   setSdrWhites,
   setSdrHighlightSat,
   setWbPreset,
-  resetBasic,
 } from "../../store/slices/basicSlice";
 import {
   setTemperature,
