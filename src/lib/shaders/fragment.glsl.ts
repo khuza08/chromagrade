@@ -5,6 +5,7 @@ uniform sampler2D u_texture;
 uniform vec2 u_resolution;
 
 // Grading Uniforms
+uniform float u_exposure;    // EV stops, -5.0 to +5.0
 uniform float u_contrast;    // 0.0 to 2.0, pivot 1.0
 uniform float u_saturation;  // 0.0 to 2.0, pivot 1.0
 uniform float u_temperature; // -0.2 to 0.2
@@ -56,6 +57,11 @@ void main() {
   vec2 flippedCoord = vec2(v_texCoord.x, 1.0 - v_texCoord.y);
   vec4 texColor = texture(u_texture, flippedCoord);
   vec3 color = texColor.rgb;
+
+  // Exposure — EV-based, linear light, no tone-mapping (matches Lightroom behavior)
+  vec3 linColor = pow(max(color, 0.0001), vec3(2.2)); // linearize, avoid pow(0)
+  linColor *= pow(2.0, u_exposure);                    // EV multiply: +1EV = 2x, -1EV = 0.5x
+  color = pow(clamp(linColor, 0.0, 1.0), vec3(1.0 / 2.2)); // re-encode
 
   // Temperature & Tint — RGB multiplicative scaling in linear light
 

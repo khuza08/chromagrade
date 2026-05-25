@@ -23,6 +23,7 @@ const CanvasViewer: React.FC = () => {
   const viewportResetToken = useSelector((state: RootState) => state.ui.viewportResetToken);
   const { curves } = useSelector((state: RootState) => state.grading);
   const gradingParams = useSelector((state: RootState) => state.grading);
+  const basic = useSelector((state: RootState) => state.basic);
   const [zoom, setZoom] = useState(1.0);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [rotation, setRotation] = useState(0);
@@ -68,9 +69,9 @@ const CanvasViewer: React.FC = () => {
   // Redraw when grading params change
   useEffect(() => {
     if (originalUrl) {
-      canvasEngine.render(gradingParams);
+      canvasEngine.render(gradingParams, basic.exposure);
     }
-  }, [gradingParams, originalUrl]);
+  }, [gradingParams, basic.exposure, originalUrl]);
 
   // Extract color palette for dynamic UI
   useEffect(() => {
@@ -222,7 +223,7 @@ const CanvasViewer: React.FC = () => {
 
     const dimensions = await canvasEngine.loadImage(url);
     dispatch(setImage({ url, width: dimensions.width, height: dimensions.height, name: file.name, previewWarning }));
-    canvasEngine.render(gradingParams);
+    canvasEngine.render(gradingParams, basic.exposure);
     setTimeout(() => { const fit = calculateFitZoom(); setZoom(fit); setPan({ x: 0, y: 0 }); }, 50);
   };
 

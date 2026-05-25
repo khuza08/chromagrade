@@ -71,6 +71,7 @@ export class CanvasEngine {
 
     // Build params for worker mirroring the shader uniforms
     const workerParams = {
+      exposure: (store.getState() as any).basic?.exposure ?? 0,
       contrast: (params.contrast + 100) / 100,
       saturation: (params.saturation + 100) / 100,
       temperature: params.temperature * TEMP_SCALE,
@@ -173,6 +174,7 @@ export class CanvasEngine {
     const uniforms = [
       "u_texture",
       "u_resolution",
+      "u_exposure",
       "u_contrast",
       "u_saturation",
       "u_vibrance",
@@ -400,10 +402,13 @@ export class CanvasEngine {
     }
   }
 
-  public render(params: GradingState) {
+  public render(
+    params: GradingState,
+    exposure: number = (store.getState() as any).basic?.exposure ?? 0,
+  ) {
     if (!this.gl || !this.program || !this._proxyTexture) return;
 
-    const serialized = JSON.stringify(params);
+    const serialized = JSON.stringify({ params, exposure });
     if (serialized === this._lastParams && !this._needsRender) return;
 
     this._lastParams = serialized;
@@ -437,6 +442,8 @@ export class CanvasEngine {
       gl.canvas.width,
       gl.canvas.height,
     );
+    console.log('exposure uniform:', exposure);
+    gl.uniform1f(this._uniforms["u_exposure"], exposure);
     gl.uniform1f(this._uniforms["u_contrast"], (params.contrast + 100) / 100);
     gl.uniform1f(
       this._uniforms["u_saturation"],
@@ -635,7 +642,10 @@ export class CanvasEngine {
     return this._histogramProxyImageData;
   }
 
-  public exportHighRes(params: GradingState): HTMLCanvasElement {
+  public exportHighRes(
+    params: GradingState,
+    exposure: number = (store.getState() as any).basic?.exposure ?? 0,
+  ): HTMLCanvasElement {
     if (!this._originalImage) throw new Error("No image loaded");
 
     const canvas = document.createElement("canvas");
@@ -688,6 +698,7 @@ export class CanvasEngine {
     };
 
     setUni("u_resolution", "uniform2f", canvas.width, canvas.height);
+    setUni("u_exposure", "uniform1f", exposure);
     setUni("u_contrast", "uniform1f", (params.contrast + 100) / 100);
     setUni("u_saturation", "uniform1f", (params.saturation + 100) / 100);
     setUni("u_temperature", "uniform1f", params.temperature * TEMP_SCALE);
@@ -806,10 +817,11 @@ export class CanvasEngine {
   public exportToBlob(
     params: GradingState,
     format: "jpg" | "png" | "gif",
+    exposure?: number,
   ): Promise<Blob> {
     return new Promise((resolve, reject) => {
       try {
-        const canvas = this.exportHighRes(params);
+        const canvas = this.exportHighRes(params, exposure);
         const mimeType = format === "jpg" ? "image/jpeg" : `image/${format}`;
         const quality = format === "jpg" ? 0.92 : undefined;
 
