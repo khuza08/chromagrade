@@ -14,6 +14,9 @@ import { setHistogramData } from "../store/slices/histogramSlice";
 import { store } from "../store/store";
 import { throttle } from "../utils/throttle";
 
+const TEMP_SCALE = 0.008;
+const TINT_SCALE = 0.004;
+
 export class CanvasEngine {
   private gl: WebGL2RenderingContext | null = null;
   private program: WebGLProgram | null = null;
@@ -70,8 +73,8 @@ export class CanvasEngine {
     const workerParams = {
       contrast: (params.contrast + 100) / 100,
       saturation: (params.saturation + 100) / 100,
-      temperature: params.temperature * 0.001,
-      tint: params.tint * 0.0005,
+      temperature: params.temperature * TEMP_SCALE,
+      tint: params.tint * TINT_SCALE,
       shadows: this.cartesianToRGB(params.primary.shadows, 0.2),
       midtones: {
         r: Math.pow(
@@ -438,8 +441,11 @@ export class CanvasEngine {
       this._uniforms["u_saturation"],
       (params.saturation + 100) / 100,
     );
-    gl.uniform1f(this._uniforms["u_temperature"], params.temperature * 0.001);
-    gl.uniform1f(this._uniforms["u_tint"], params.tint * 0.0005);
+    gl.uniform1f(
+      this._uniforms["u_temperature"],
+      params.temperature * TEMP_SCALE,
+    );
+    gl.uniform1f(this._uniforms["u_tint"], params.tint * TINT_SCALE);
     gl.uniform1f(this._uniforms["u_vibrance"], params.vibrance / 100);
 
     // Shadows (Lift)
@@ -683,8 +689,8 @@ export class CanvasEngine {
     setUni("u_resolution", "uniform2f", canvas.width, canvas.height);
     setUni("u_contrast", "uniform1f", (params.contrast + 100) / 100);
     setUni("u_saturation", "uniform1f", (params.saturation + 100) / 100);
-    setUni("u_temperature", "uniform1f", params.temperature * 0.001);
-    setUni("u_tint", "uniform1f", params.tint * 0.0005);
+    setUni("u_temperature", "uniform1f", params.temperature * TEMP_SCALE);
+    setUni("u_tint", "uniform1f", params.tint * TINT_SCALE);
     setUni("u_vibrance", "uniform1f", params.vibrance / 100);
 
     const s = this.cartesianToRGB(params.primary.shadows, 0.2);

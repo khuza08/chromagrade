@@ -57,11 +57,24 @@ void main() {
   vec4 texColor = texture(u_texture, flippedCoord);
   vec3 color = texColor.rgb;
 
-  // Temperature & Tint — simple linear channel shift
-  color.r += u_temperature;
-  color.g -= u_tint;
-  color.b -= u_temperature;
-  color = clamp(color, 0.0, 1.0);
+  // Temperature & Tint RGB multiplicative scaling
+  // Warm = boost red, reduce blue. Cool = opposite.
+  // Multiplicative preserves luminosity relationships unlike additive
+  // This is better than a RGB channel shift imo, it just need more tweaks
+
+  vec3 tempScale = vec3(
+    1.0 + u_temperature * 0.8,   // red: boost when warm
+    1.0 + u_temperature * 0.2,   // green: slight boost = yellow not orange
+    1.0 - u_temperature * 0.8    // blue: reduce when warm
+  );
+
+  vec3 tintScale = vec3(
+    1.0 + u_tint * 0.3,   // red: slight boost for magenta
+    1.0 - u_tint * 0.5,   // green: reduce for magenta push
+    1.0 + u_tint * 0.1    // blue: slight boost = magenta not red
+  );
+
+  color = clamp(color * tempScale * tintScale, 0.0, 1.0);
 
   // 2. Shadows (Lift): color + (u_shadows * (1.0 - color))
   color = color + (u_shadows * (1.0 - color));
