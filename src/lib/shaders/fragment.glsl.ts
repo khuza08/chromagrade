@@ -57,24 +57,44 @@ void main() {
   vec4 texColor = texture(u_texture, flippedCoord);
   vec3 color = texColor.rgb;
 
-  // Temperature & Tint RGB multiplicative scaling
-  // Warm = boost red, reduce blue. Cool = opposite.
-  // Multiplicative preserves luminosity relationships unlike additive
-  // This is better than a RGB channel shift imo, it just need more tweaks
+  // Temperature & Tint — RGB multiplicative scaling in linear light
 
-  vec3 tempScale = vec3(
-    1.0 + u_temperature * 0.8,   // red: boost when warm
-    1.0 + u_temperature * 0.2,   // green: slight boost = yellow not orange
-    1.0 - u_temperature * 0.8    // blue: reduce when warm
-  );
-
-  vec3 tintScale = vec3(
-    1.0 + u_tint * 0.3,   // red: slight boost for magenta
-    1.0 - u_tint * 0.5,   // green: reduce for magenta push
-    1.0 + u_tint * 0.1    // blue: slight boost = magenta not red
-  );
-
-  color = clamp(color * tempScale * tintScale, 0.0, 1.0);
+    // NOTE: This implementation cannot fully replicate Adobe Lightroom Classic
+    // white balance behavior. Lightroom uses a full ML pipeline (neural networks,
+    // OpenCV computer vision, per-camera color matrices, and 14-bit RAW sensor data)
+    // to achieve its results. ChromaGrade works on already-processed JPEG data in
+    // gamma-encoded 8-bit space, which fundamentally limits shadow recovery and
+    // per-object color shifts. The approach here (linearize → multiply → re-encode)
+    // is the best achievable on JPEG without ML. ML-powered WB is a planned future feature,
+    // while i know my limits.
+    //
+    // WB in linear light (simulates RAW pipeline)
+    vec3 linear = pow(color, vec3(2.2)); // decode gamma → linear
+    vec3 tempScale = vec3(
+      1.0 + u_temperature * 0.9,
+      1.0 + u_temperature * 0.3,
+      1.0 - u_temperature * 0.2
+    );
+    vec3 tintScale = vec3(
+      1.0 + u_tint * 0.3,
+      1.0 - u_tint * 0.5,
+      1.0 + u_tint * 0.1
+    );
+    linear = clamp(linear * tempScale * tintScale, 0.0, 1.0);
+    // Re-encode to gamma for hue assist
+    color = pow(linear, vec3(1.0 / 2.2));
+    // Warm hue assist
+    vec3 warmHsv = rgb2hsv(color);
+    float isGreen = smoothstep(0.22, 0.24, warmHsv.x)
+                  * (1.0 - smoothstep(0.36, 0.48, warmHsv.x))
+                  * smoothstep(0.1, 0.3, warmHsv.y);
+    float darkBoost = 1.0 - warmHsv.z;
+    warmHsv.x -= u_temperature * 0.1 * isGreen;
+    warmHsv.y = clamp(warmHsv.y + u_temperature * 0.15 * isGreen, 0.0, 1.0);
+    warmHsv.z += u_temperature * 0.15 * isGreen * darkBoost;
+    warmHsv.z = clamp(warmHsv.z, 0.15, 1.0);
+    warmHsv.x = fract(warmHsv.x);
+    color = hsv2rgb(warmHsv);
 
   // 2. Shadows (Lift): color + (u_shadows * (1.0 - color))
   color = color + (u_shadows * (1.0 - color));
