@@ -12,10 +12,12 @@ interface PerformanceSliderProps {
   value: number;
   onChange: (value: number) => void; // This will be the Redux dispatch
   onReset?: () => void;
+  trackGradient?: string;
+  showTicks?: boolean;
 }
 
 const PerformanceSlider: React.FC<PerformanceSliderProps> = ({ 
-  label, min, max, step = 1, value, onChange, onReset 
+  label, min, max, step = 1, value, onChange, onReset, trackGradient, showTicks
 }) => {
   const [localValue, setLocalValue] = useState(value);
   const isDragging = useRef(false);
@@ -50,38 +52,52 @@ const PerformanceSlider: React.FC<PerformanceSliderProps> = ({
     onChange(localValue);
   };
 
+  const displayValue = step < 1 
+    ? (localValue > 0 ? `+${localValue.toFixed(2)}` : localValue.toFixed(2))
+    : (localValue > 0 ? `+${localValue}` : localValue);
+
   return (
-    <div className="space-y-1.5 w-full group">
-      <div className="flex justify-between items-center px-1">
-        <label className="text-[10px] font-bold uppercase tracking-wider text-[var(--text-secondary)]">
-          {label}
-        </label>
-        <div className="flex items-center gap-1.5">
-          {onReset && (
-            <button 
-              onClick={onReset}
-              className="opacity-0 group-hover:opacity-100 p-0.5 hover:text-[var(--theme-primary)] text-[var(--text-tertiary)] transition-all cursor-pointer"
-              title="Reset"
-            >
-              <RotateCcw size={10} />
-            </button>
-          )}
-          <span className="text-[10px] font-mono text-[var(--theme-primary)] bg-[var(--bg-control)] px-1.5 py-0.5 rounded min-w-[32px] text-center">
-            {localValue > 0 ? `+${localValue}` : localValue}
-          </span>
-        </div>
+    <div className="flex items-center gap-2 w-full group">
+      <label className="text-[11px] text-[var(--text-secondary)] w-[72px] shrink-0">
+        {label}
+      </label>
+      
+      <div className="relative flex-1 flex items-center h-4">
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={step}
+          value={localValue}
+          onChange={handleDrag}
+          onMouseUp={handleRelease}
+          onTouchEnd={handleRelease}
+          style={{ background: trackGradient ?? undefined }}
+          className="w-full h-1 bg-[var(--bg-control)] rounded-lg appearance-none cursor-pointer accent-[var(--theme-primary)] transition-all z-10"
+        />
+        {showTicks && (
+          <div className="absolute top-[10px] w-full flex justify-between px-[6px] pointer-events-none">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="w-px h-1 bg-[var(--text-tertiary)] opacity-40" />
+            ))}
+          </div>
+        )}
       </div>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        step={step}
-        value={localValue}
-        onChange={handleDrag}
-        onMouseUp={handleRelease}
-        onTouchEnd={handleRelease}
-        className="w-full h-1 bg-[var(--bg-control)] rounded-lg appearance-none cursor-pointer accent-[var(--theme-primary)] transition-all"
-      />
+
+      <div className="flex items-center gap-1 w-10 justify-end shrink-0">
+        {onReset && (
+          <button 
+            onClick={onReset}
+            className="opacity-0 group-hover:opacity-100 p-0.5 hover:text-[var(--theme-primary)] text-[var(--text-tertiary)] transition-all cursor-pointer"
+            title="Reset"
+          >
+            <RotateCcw size={10} />
+          </button>
+        )}
+        <span className="text-[11px] font-mono text-[var(--text-primary)] w-9 text-right tabular-nums">
+          {displayValue}
+        </span>
+      </div>
     </div>
   );
 };
