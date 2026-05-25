@@ -284,18 +284,19 @@ export class CanvasEngine {
         }
         this._originalImage = img;
 
+        // disable downsample, ill implement better soon
         // Calculate Proxy Dimensions
-        const maxW = Math.min(window.innerWidth, 1920);
-        const maxH = Math.min(window.innerHeight, 1080);
+        // const maxW = Math.min(window.innerWidth, 1920);
+        //const maxH = Math.min(window.innerHeight, 1080);
 
         let proxyW = img.width;
         let proxyH = img.height;
 
-        if (proxyW > maxW || proxyH > maxH) {
-          const ratio = Math.min(maxW / proxyW, maxH / proxyH);
-          proxyW = Math.floor(proxyW * ratio);
-          proxyH = Math.floor(proxyH * ratio);
-        }
+        //if (proxyW > maxW || proxyH > maxH) {
+        //  const ratio = Math.min(maxW / proxyW, maxH / proxyH);
+        //  proxyW = Math.floor(proxyW * ratio);
+        //  proxyH = Math.floor(proxyH * ratio);
+        // }
 
         // Create Proxy Canvas
         const proxyCanvas = this._createProxy(img, proxyW, proxyH);
