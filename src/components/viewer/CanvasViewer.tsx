@@ -66,12 +66,20 @@ const CanvasViewer: React.FC = () => {
     canvasEngine.updateHslTextures(gradingParams.hsl);
   }, [gradingParams.hsl]);
 
-  // Redraw when grading params change
+  // Redraw when grading params or basic sliders change
   useEffect(() => {
     if (originalUrl) {
       canvasEngine.render(gradingParams, basic.exposure);
     }
-  }, [gradingParams, basic.exposure, originalUrl]);
+  }, [
+    gradingParams,
+    basic.exposure,
+    basic.toneHighlights,
+    basic.toneShadows,
+    basic.whites,
+    basic.blacks,
+    originalUrl
+  ]);
 
   // Extract color palette for dynamic UI
   useEffect(() => {

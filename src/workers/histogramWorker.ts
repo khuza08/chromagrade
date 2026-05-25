@@ -5,6 +5,10 @@
 
 interface GradingParams {
   exposure: number;
+  toneHighlights: number;
+  toneShadows: number;
+  whites: number;
+  blacks: number;
   contrast: number;
   saturation: number;
   temperature: number;
@@ -130,6 +134,17 @@ self.onmessage = (e: MessageEvent) => {
       r = (r - 0.5) * params.contrast + 0.5;
       g = (g - 0.5) * params.contrast + 0.5;
       b = (b - 0.5) * params.contrast + 0.5;
+
+      // 6.5 Tone Ranges (Highlights, Shadows, Whites, Blacks)
+      const toneLuma = r * LUMA_WEIGHTS.r + g * LUMA_WEIGHTS.g + b * LUMA_WEIGHTS.b;
+      const tsVal = params.toneShadows * Math.pow(1.0 - toneLuma, 2.0) * 0.3;
+      const thVal = params.toneHighlights * Math.pow(toneLuma, 2.0) * 0.3;
+      const tbVal = params.blacks * Math.pow(1.0 - toneLuma, 4.0) * 0.3;
+      const twVal = params.whites * Math.pow(toneLuma, 4.0) * 0.3;
+
+      r = Math.min(1.0, Math.max(0.0, r + tsVal + thVal + tbVal + twVal));
+      g = Math.min(1.0, Math.max(0.0, g + tsVal + thVal + tbVal + twVal));
+      b = Math.min(1.0, Math.max(0.0, b + tsVal + thVal + tbVal + twVal));
 
       // 7. Saturation
       const lumaValue = r * LUMA_WEIGHTS.r + g * LUMA_WEIGHTS.g + b * LUMA_WEIGHTS.b;

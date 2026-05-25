@@ -10,6 +10,12 @@ uniform float u_temperature; // -0.2 to 0.2
 uniform float u_tint; // Tint adjustment
 uniform float u_vibrance;  // Vibrance (smart saturation)
 
+// Tone Ranges (slider -100 to 100, mapped to float)
+uniform float u_toneHighlights;
+uniform float u_toneShadows;
+uniform float u_whites;
+uniform float u_blacks;
+
 // Primary Wheels
 uniform vec3 u_shadows;      // Lift
 uniform vec3 u_midtones;     // Gamma

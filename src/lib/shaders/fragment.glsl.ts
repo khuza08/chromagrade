@@ -3,6 +3,7 @@ import { helpers } from './modules/helpers.glsl';
 import { exposure } from './modules/exposure.glsl';
 import { whitebalance } from './modules/whitebalance.glsl';
 import { primary } from './modules/primary.glsl';
+import { toneranges } from './modules/toneranges.glsl';
 import { saturation } from './modules/saturation.glsl';
 import { curves } from './modules/curves.glsl';
 import { hsl } from './modules/hsl.glsl';
@@ -22,6 +23,7 @@ void main() {
 ${exposure}
 ${whitebalance}
 ${primary}
+${toneranges}
 ${saturation}
 ${curves}
 ${hsl}

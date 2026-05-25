@@ -72,6 +72,10 @@ export class CanvasEngine {
     // Build params for worker mirroring the shader uniforms
     const workerParams = {
       exposure: (store.getState() as any).basic?.exposure ?? 0,
+      toneHighlights: ((store.getState() as any).basic?.toneHighlights ?? 0) / 100,
+      toneShadows: ((store.getState() as any).basic?.toneShadows ?? 0) / 100,
+      whites: ((store.getState() as any).basic?.whites ?? 0) / 100,
+      blacks: ((store.getState() as any).basic?.blacks ?? 0) / 100,
       contrast: (params.contrast + 100) / 100,
       saturation: (params.saturation + 100) / 100,
       temperature: params.temperature * TEMP_SCALE,
@@ -175,6 +179,10 @@ export class CanvasEngine {
       "u_texture",
       "u_resolution",
       "u_exposure",
+      "u_toneHighlights",
+      "u_toneShadows",
+      "u_whites",
+      "u_blacks",
       "u_contrast",
       "u_saturation",
       "u_vibrance",
@@ -408,7 +416,15 @@ export class CanvasEngine {
   ) {
     if (!this.gl || !this.program || !this._proxyTexture) return;
 
-    const serialized = JSON.stringify({ params, exposure });
+    const basicState = (store.getState() as any).basic ?? {};
+    const serialized = JSON.stringify({
+      params,
+      exposure,
+      toneHighlights: basicState.toneHighlights,
+      toneShadows: basicState.toneShadows,
+      whites: basicState.whites,
+      blacks: basicState.blacks,
+    });
     if (serialized === this._lastParams && !this._needsRender) return;
 
     this._lastParams = serialized;
@@ -442,8 +458,11 @@ export class CanvasEngine {
       gl.canvas.width,
       gl.canvas.height,
     );
-    console.log('exposure uniform:', exposure);
     gl.uniform1f(this._uniforms["u_exposure"], exposure);
+    gl.uniform1f(this._uniforms["u_toneHighlights"], (basicState.toneHighlights ?? 0) / 100);
+    gl.uniform1f(this._uniforms["u_toneShadows"], (basicState.toneShadows ?? 0) / 100);
+    gl.uniform1f(this._uniforms["u_whites"], (basicState.whites ?? 0) / 100);
+    gl.uniform1f(this._uniforms["u_blacks"], (basicState.blacks ?? 0) / 100);
     gl.uniform1f(this._uniforms["u_contrast"], (params.contrast + 100) / 100);
     gl.uniform1f(
       this._uniforms["u_saturation"],
@@ -699,6 +718,11 @@ export class CanvasEngine {
 
     setUni("u_resolution", "uniform2f", canvas.width, canvas.height);
     setUni("u_exposure", "uniform1f", exposure);
+    const basicState = (store.getState() as any).basic || {};
+    setUni("u_toneHighlights", "uniform1f", (basicState.toneHighlights ?? 0) / 100);
+    setUni("u_toneShadows", "uniform1f", (basicState.toneShadows ?? 0) / 100);
+    setUni("u_whites", "uniform1f", (basicState.whites ?? 0) / 100);
+    setUni("u_blacks", "uniform1f", (basicState.blacks ?? 0) / 100);
     setUni("u_contrast", "uniform1f", (params.contrast + 100) / 100);
     setUni("u_saturation", "uniform1f", (params.saturation + 100) / 100);
     setUni("u_temperature", "uniform1f", params.temperature * TEMP_SCALE);
