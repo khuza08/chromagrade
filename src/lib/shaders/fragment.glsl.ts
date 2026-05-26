@@ -4,6 +4,7 @@ import { exposure } from './modules/exposure.glsl';
 import { whitebalance } from './modules/whitebalance.glsl';
 import { primary } from './modules/primary.glsl';
 import { toneranges } from './modules/toneranges.glsl';
+import { presence } from './modules/presence.glsl';
 import { saturation } from './modules/saturation.glsl';
 import { curves } from './modules/curves.glsl';
 import { hsl } from './modules/hsl.glsl';
@@ -24,6 +25,7 @@ ${exposure}
 ${whitebalance}
 ${primary}
 ${toneranges}
+${presence}
 ${saturation}
 ${curves}
 ${hsl}

@@ -76,6 +76,9 @@ export class CanvasEngine {
       toneShadows: ((store.getState() as any).basic?.toneShadows ?? 0) / 100,
       whites: ((store.getState() as any).basic?.whites ?? 0) / 100,
       blacks: ((store.getState() as any).basic?.blacks ?? 0) / 100,
+      texture: ((store.getState() as any).basic?.texture ?? 0) / 100,
+      clarity: ((store.getState() as any).basic?.clarity ?? 0) / 100,
+      dehaze: ((store.getState() as any).basic?.dehaze ?? 0) / 100,
       contrast: (params.contrast + 100) / 100,
       saturation: (params.saturation + 100) / 100,
       temperature: params.temperature * TEMP_SCALE,
@@ -183,6 +186,9 @@ export class CanvasEngine {
       "u_toneShadows",
       "u_whites",
       "u_blacks",
+      "u_textureAmt",
+      "u_clarity",
+      "u_dehaze",
       "u_contrast",
       "u_saturation",
       "u_vibrance",
@@ -424,6 +430,9 @@ export class CanvasEngine {
       toneShadows: basicState.toneShadows,
       whites: basicState.whites,
       blacks: basicState.blacks,
+      texture: basicState.texture,
+      clarity: basicState.clarity,
+      dehaze: basicState.dehaze,
     });
     if (serialized === this._lastParams && !this._needsRender) return;
 
@@ -463,6 +472,9 @@ export class CanvasEngine {
     gl.uniform1f(this._uniforms["u_toneShadows"], (basicState.toneShadows ?? 0) / 100);
     gl.uniform1f(this._uniforms["u_whites"], (basicState.whites ?? 0) / 100);
     gl.uniform1f(this._uniforms["u_blacks"], (basicState.blacks ?? 0) / 100);
+    gl.uniform1f(this._uniforms["u_textureAmt"], (basicState.texture ?? 0) / 100);
+    gl.uniform1f(this._uniforms["u_clarity"], (basicState.clarity ?? 0) / 100);
+    gl.uniform1f(this._uniforms["u_dehaze"], (basicState.dehaze ?? 0) / 100);
     gl.uniform1f(this._uniforms["u_contrast"], (params.contrast + 100) / 100);
     gl.uniform1f(
       this._uniforms["u_saturation"],
@@ -723,6 +735,9 @@ export class CanvasEngine {
     setUni("u_toneShadows", "uniform1f", (basicState.toneShadows ?? 0) / 100);
     setUni("u_whites", "uniform1f", (basicState.whites ?? 0) / 100);
     setUni("u_blacks", "uniform1f", (basicState.blacks ?? 0) / 100);
+    setUni("u_textureAmt", "uniform1f", (basicState.texture ?? 0) / 100);
+    setUni("u_clarity", "uniform1f", (basicState.clarity ?? 0) / 100);
+    setUni("u_dehaze", "uniform1f", (basicState.dehaze ?? 0) / 100);
     setUni("u_contrast", "uniform1f", (params.contrast + 100) / 100);
     setUni("u_saturation", "uniform1f", (params.saturation + 100) / 100);
     setUni("u_temperature", "uniform1f", params.temperature * TEMP_SCALE);

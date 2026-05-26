@@ -16,6 +16,11 @@ uniform float u_toneShadows;
 uniform float u_whites;
 uniform float u_blacks;
 
+// Presence
+uniform float u_textureAmt;
+uniform float u_clarity;
+uniform float u_dehaze;
+
 // Primary Wheels
 uniform vec3 u_shadows;      // Lift
 uniform vec3 u_midtones;     // Gamma

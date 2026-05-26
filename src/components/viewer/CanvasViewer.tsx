@@ -78,6 +78,9 @@ const CanvasViewer: React.FC = () => {
     basic.toneShadows,
     basic.whites,
     basic.blacks,
+    basic.texture,
+    basic.clarity,
+    basic.dehaze,
     originalUrl
   ]);
 
