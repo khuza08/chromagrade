@@ -27,40 +27,6 @@ const ComingSoon = () => (
   </div>
 );
 
-const ParadePlaceholder = () => (
-  <div className="p-4">
-    <div className="h-32 bg-[var(--bg-control)] rounded border border-[var(--border)] flex items-center justify-center p-2 gap-2">
-      <div className="flex-1 h-full flex items-end gap-[1px]">
-        {[...Array(12)].map((_, i) => (
-          <div
-            key={i}
-            className="flex-1 bg-[var(--curve-r)] opacity-30"
-            style={{ height: "60%" }}
-          />
-        ))}
-      </div>
-      <div className="flex-1 h-full flex items-end gap-[1px]">
-        {[...Array(12)].map((_, i) => (
-          <div
-            key={i}
-            className="flex-1 bg-[var(--curve-g)] opacity-30"
-            style={{ height: "40%" }}
-          />
-        ))}
-      </div>
-      <div className="flex-1 h-full flex items-end gap-[1px]">
-        {[...Array(12)].map((_, i) => (
-          <div
-            key={i}
-            className="flex-1 bg-[var(--curve-b)] opacity-30"
-            style={{ height: "70%" }}
-          />
-        ))}
-      </div>
-    </div>
-  </div>
-);
-
 const RightSidebar: React.FC = () => {
   const width = "var(--right-sidebar-width)";
   const hasImage = useSelector(
@@ -84,9 +50,6 @@ const RightSidebar: React.FC = () => {
         <AccordionSection title="Basic" icon={SlidersHorizontal}>
           <BasicPanel />
         </AccordionSection>
-        <AccordionSection title="Parade" icon={Activity}>
-          <ParadePlaceholder />
-        </AccordionSection>
         <AccordionSection title="Color Wheels" icon={Circle}>
           <WheelsPanel />
         </AccordionSection>
@@ -102,7 +65,7 @@ const RightSidebar: React.FC = () => {
         <AccordionSection title="AI Grade" icon={Sparkles}>
           <ComingSoon />
         </AccordionSection>
-        <AccordionSection title="ID Presets" icon={Map}>
+        <AccordionSection title="Presets" icon={Map}>
           <IDPresetsPanel />
         </AccordionSection>
       </div>
