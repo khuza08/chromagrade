@@ -2,6 +2,9 @@ export const presence = `
   // Presence — Texture, Clarity, Dehaze
   vec2 texel = 1.0 / u_resolution;
 
+  // Exposure scale factor so blur matches graded color space
+  float expScale = pow(2.0, u_exposure);
+
   // Texture: 3x3 USM (fine detail)
   if (abs(u_textureAmt) > 0.001) {
     // Gaussian 3x3
@@ -16,14 +19,11 @@ export const presence = `
     blurT += texture(u_texture, flippedCoord + vec2( 0.0,      texel.y)).rgb * 2.0;
     blurT += texture(u_texture, flippedCoord + vec2( texel.x,  texel.y)).rgb * 1.0;
     blurT /= 16.0;
+    blurT *= expScale;
 
-    // Scale: power curve for natural slider feel
     float sharpAmt = sign(u_textureAmt) * pow(abs(u_textureAmt), 1.5);
-
-    // Luma-only to avoid color fringing
     const vec3 luma = vec3(0.2126, 0.7152, 0.0722);
     float detail = dot(color - blurT, luma);
-
     color += detail * sharpAmt;
     color = clamp(color, 0.0, 1.0);
   }
@@ -72,6 +72,7 @@ export const presence = `
     blurC += texture(u_texture, flippedCoord + vec2( 2.0*t.x,  2.0*t.y)).rgb *  1.0;
 
     blurC /= 256.0;
+    blurC *= expScale;
 
     // Luma-only, same power curve as sharpness
     const vec3 luma = vec3(0.2126, 0.7152, 0.0722);
