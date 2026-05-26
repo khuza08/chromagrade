@@ -67,27 +67,31 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       <TopBar />
 
       <div className="flex-1 flex overflow-hidden">
-        <LeftSidebar />
-        <Resizer
-          direction="horizontal"
-          onResize={handleLeftResize}
-          onResizeEnd={handleLeftResizeEnd}
-          className="border-r border-[var(--border)]"
-          disabled={!hasImage || leftSidebarCollapsed}
-        />
+        {hasImage && <LeftSidebar />}
+        {hasImage && (
+          <Resizer
+            direction="horizontal"
+            onResize={handleLeftResize}
+            onResizeEnd={handleLeftResizeEnd}
+            className="border-r border-[var(--border)]"
+            disabled={leftSidebarCollapsed}
+          />
+        )}
 
         <main className="flex-1 overflow-hidden">
           {children}
         </main>
 
-        <Resizer
-          direction="horizontal"
-          onResize={handleRightResize}
-          onResizeEnd={handleRightResizeEnd}
-          className="border-l border-[var(--border)]"
-          disabled={!hasImage}
-        />
-        <RightSidebar />
+        {hasImage && (
+          <Resizer
+            direction="horizontal"
+            onResize={handleRightResize}
+            onResizeEnd={handleRightResizeEnd}
+            className="border-l border-[var(--border)]"
+            disabled={false}
+          />
+        )}
+        {hasImage && <RightSidebar />}
       </div>
     </div>
   );

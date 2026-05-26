@@ -1,26 +1,39 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { store } from '../../store/store';
-import type { RootState } from '../../store/store';
-import { setImage } from '../../store/slices/imageSlice';
-import { canvasEngine } from '../../lib/CanvasEngine';
-import { setPickerActive } from '../../store/slices/uiSlice';
-import { setCurvePoints } from '../../store/slices/gradingSlice';
-import { Upload, Maximize, ZoomIn, ZoomOut, RotateCcw, RotateCw } from 'lucide-react';
-import TargetOverlay from './TargetOverlay';
-import { extractPalette } from '../../utils/vibrant';
-import { useTheme } from '../../context/ThemeContext';
-import { extractPreview } from '../../lib/rawLoader';
+import React, { useEffect, useRef, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { store } from "../../store/store";
+import type { RootState } from "../../store/store";
+import { setImage } from "../../store/slices/imageSlice";
+import { canvasEngine } from "../../lib/CanvasEngine";
+import { setPickerActive } from "../../store/slices/uiSlice";
+import { setCurvePoints } from "../../store/slices/gradingSlice";
+import {
+  Upload,
+  Maximize,
+  ZoomIn,
+  ZoomOut,
+  RotateCcw,
+  RotateCw,
+} from "lucide-react";
+import TargetOverlay from "./TargetOverlay";
+import { extractPalette } from "../../utils/vibrant";
+import { useTheme } from "../../context/ThemeContext";
+import { extractPreview } from "../../lib/rawLoader";
 
 const CanvasViewer: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const dispatch = useDispatch();
   const { applyPalette } = useTheme();
-  const { originalUrl, dimensions, fileName } = useSelector((state: RootState) => state.image);
-  const previewWarning = useSelector((state: RootState) => state.image.previewWarning);
+  const { originalUrl, dimensions, fileName } = useSelector(
+    (state: RootState) => state.image,
+  );
+  const previewWarning = useSelector(
+    (state: RootState) => state.image.previewWarning,
+  );
   const { isPickerActive } = useSelector((state: RootState) => state.ui);
-  const viewportResetToken = useSelector((state: RootState) => state.ui.viewportResetToken);
+  const viewportResetToken = useSelector(
+    (state: RootState) => state.ui.viewportResetToken,
+  );
   const { curves } = useSelector((state: RootState) => state.grading);
   const gradingParams = useSelector((state: RootState) => state.grading);
   const basic = useSelector((state: RootState) => state.basic);
@@ -50,12 +63,13 @@ const CanvasViewer: React.FC = () => {
       if (containerRef.current) {
         canvasEngine.resize(
           containerRef.current.clientWidth,
-          containerRef.current.clientHeight
+          containerRef.current.clientHeight,
         );
       }
     };
-    document.addEventListener('fullscreenchange', handleFsChange);
-    return () => document.removeEventListener('fullscreenchange', handleFsChange);
+    document.addEventListener("fullscreenchange", handleFsChange);
+    return () =>
+      document.removeEventListener("fullscreenchange", handleFsChange);
   }, []);
 
   // Update Curve and HSL Textures separately to avoid excessive LUT generation
@@ -98,7 +112,7 @@ const CanvasViewer: React.FC = () => {
     basic.sdrHighlightSat,
     lut.activeLut,
     lut.strength,
-    originalUrl
+    originalUrl,
   ]);
 
   // Extract color palette for dynamic UI
@@ -116,7 +130,6 @@ const CanvasViewer: React.FC = () => {
     return () => clearTimeout(timer);
   }, [originalUrl, applyPalette]);
 
-
   // Reset zoom/pan when workspace is loaded externally (e.g. from TopBar)
   useEffect(() => {
     if (viewportResetToken === 0) return;
@@ -133,7 +146,7 @@ const CanvasViewer: React.FC = () => {
     const observer = new ResizeObserver(() => {
       canvasEngine.resize(
         containerRef.current!.clientWidth,
-        containerRef.current!.clientHeight
+        containerRef.current!.clientHeight,
       );
     });
     observer.observe(containerRef.current);
@@ -160,12 +173,12 @@ const CanvasViewer: React.FC = () => {
     return Math.min(
       (containerW - 40) / canvasW,
       (containerH - 40) / canvasH,
-      1.0
+      1.0,
     );
   };
 
   const handleZoom = (delta: number) => {
-    setZoom(prev => Math.max(0.05, Math.min(10.0, prev + delta)));
+    setZoom((prev) => Math.max(0.05, Math.min(10.0, prev + delta)));
   };
 
   const resetZoom = () => {
@@ -174,13 +187,16 @@ const CanvasViewer: React.FC = () => {
     setPan({ x: 0, y: 0 });
   };
 
-  const isHslTargetActive = useSelector((state: RootState) => state.ui.isHslTargetActive);
+  const isHslTargetActive = useSelector(
+    (state: RootState) => state.ui.isHslTargetActive,
+  );
   const hslViewMode = useSelector((state: RootState) => state.ui.hslViewMode);
 
   const handlePointerDown = (e: React.PointerEvent) => {
+    if (!originalUrl) return;
     // Block panning if Target Tool is active (Target Tool only works in HSL mode)
-    if (isHslTargetActive && hslViewMode === 'hsl') return;
-    
+    if (isHslTargetActive && hslViewMode === "hsl") return;
+
     // Allow panning if zoomed in OR if the image is larger than container
     setIsDragging(true);
     dragStart.current = { x: e.clientX - pan.x, y: e.clientY - pan.y };
@@ -191,7 +207,7 @@ const CanvasViewer: React.FC = () => {
     if (!isDragging) return;
     setPan({
       x: e.clientX - dragStart.current.x,
-      y: e.clientY - dragStart.current.y
+      y: e.clientY - dragStart.current.y,
     });
   };
 
@@ -207,22 +223,27 @@ const CanvasViewer: React.FC = () => {
 
     // Get value based on active curve channel
     let value = 0;
-    const activeCurveChannel = (store.getState() as RootState).ui.activeCurveChannel;
+    const activeCurveChannel = (store.getState() as RootState).ui
+      .activeCurveChannel;
 
-    if (activeCurveChannel === 'master') {
+    if (activeCurveChannel === "master") {
       // Rec. 709 Luma
       value = (0.2126 * pixel[0] + 0.7152 * pixel[1] + 0.0722 * pixel[2]) / 255;
-    } else if (activeCurveChannel === 'red') {
+    } else if (activeCurveChannel === "red") {
       value = pixel[0] / 255;
-    } else if (activeCurveChannel === 'green') {
+    } else if (activeCurveChannel === "green") {
       value = pixel[1] / 255;
-    } else if (activeCurveChannel === 'blue') {
+    } else if (activeCurveChannel === "blue") {
       value = pixel[2] / 255;
     }
-    
+
     const currentPoints = curves[activeCurveChannel];
-    const newPoints = [...currentPoints, { x: value, y: value }].sort((a, b) => a.x - b.x);
-    dispatch(setCurvePoints({ channel: activeCurveChannel, points: newPoints }));
+    const newPoints = [...currentPoints, { x: value, y: value }].sort(
+      (a, b) => a.x - b.x,
+    );
+    dispatch(
+      setCurvePoints({ channel: activeCurveChannel, points: newPoints }),
+    );
 
     dispatch(setPickerActive(false));
   };
@@ -233,10 +254,19 @@ const CanvasViewer: React.FC = () => {
   };
 
   const handleFileUpload = async (file: File) => {
-    const RAW_EXTENSIONS = ['arw', 'cr2', 'cr3', 'nef', 'orf', 'raf', 'rw2', 'dng'];
-    const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
+    const RAW_EXTENSIONS = [
+      "arw",
+      "cr2",
+      "cr3",
+      "nef",
+      "orf",
+      "raf",
+      "rw2",
+      "dng",
+    ];
+    const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
     const isRaw = RAW_EXTENSIONS.includes(ext);
-    if (!file.type.startsWith('image/') && !isRaw) return;
+    if (!file.type.startsWith("image/") && !isRaw) return;
 
     let url: string;
     let previewWarning: string | null = null;
@@ -250,9 +280,21 @@ const CanvasViewer: React.FC = () => {
     }
 
     const dimensions = await canvasEngine.loadImage(url);
-    dispatch(setImage({ url, width: dimensions.width, height: dimensions.height, name: file.name, previewWarning }));
+    dispatch(
+      setImage({
+        url,
+        width: dimensions.width,
+        height: dimensions.height,
+        name: file.name,
+        previewWarning,
+      }),
+    );
     canvasEngine.render(gradingParams, basic.exposure);
-    setTimeout(() => { const fit = calculateFitZoom(); setZoom(fit); setPan({ x: 0, y: 0 }); }, 50);
+    setTimeout(() => {
+      const fit = calculateFitZoom();
+      setZoom(fit);
+      setPan({ x: 0, y: 0 });
+    }, 50);
   };
 
   const onDrop = (e: React.DragEvent) => {
@@ -265,7 +307,7 @@ const CanvasViewer: React.FC = () => {
   return (
     <div
       ref={containerRef}
-      className={`w-full h-full relative group bg-[var(--bg-base)] overflow-hidden flex items-center justify-center transition-colors duration-500 ${isFullscreen ? 'bg-black' : ''}`}
+      className={`w-full h-full relative group bg-[var(--bg-base)] overflow-hidden flex items-center justify-center transition-colors duration-500 ${isFullscreen ? "bg-black" : ""}`}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={handlePointerUp}
@@ -273,18 +315,34 @@ const CanvasViewer: React.FC = () => {
       {/* Drop zone overlay */}
       {!originalUrl && (
         <div
-          onDragOver={(e) => { e.preventDefault(); setIsDragging(true); }}
-          onDragLeave={() => setIsDragging(false)}
-          onDrop={onDrop}
-          className={`absolute inset-0 z-10 flex flex-col items-center justify-center transition-colors duration-300 ${isDragging ? 'bg-[var(--theme-primary)]/10' : 'bg-[var(--bg-base)]'}`}
+          className={`absolute inset-0 z-10 flex flex-col items-center justify-center transition-colors duration-300`}
         >
-          <div className={`p-12 rounded-3xl border-2 border-dashed flex flex-col items-center gap-6 transition-all ${isDragging ? 'border-[var(--theme-primary)] scale-105 bg-[var(--bg-panel)] shadow-2xl' : 'border-[var(--border)]'}`}>
+          <div
+            onDragOver={(e) => {
+              e.preventDefault();
+              setIsDragging(true);
+            }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={onDrop}
+            className={`p-12 rounded-3xl border-2 border-dashed flex flex-col items-center gap-6 transition-all ${isDragging ? "border-[var(--theme-primary)] bg-[var(--bg-panel)] shadow-2xl" : "border-[var(--border)]"}`}
+          >
             <div className="w-20 h-20 rounded-2xl bg-[var(--bg-control)] flex items-center justify-center shadow-inner">
-              <Upload size={32} className={isDragging ? 'text-[var(--theme-primary)]' : 'text-[var(--text-secondary)]'} />
+              <Upload
+                size={32}
+                className={
+                  isDragging
+                    ? "text-[var(--theme-primary)]"
+                    : "text-[var(--text-secondary)]"
+                }
+              />
             </div>
             <div className="text-center space-y-2">
-              <h3 className="text-xl font-bold tracking-tight text-[var(--text-primary)]">Drop your masterpiece here</h3>
-              <p className="text-[var(--text-secondary)] text-sm max-w-xs">Supports RAW, JPG, PNG and WebP formats</p>
+              <h3 className="text-xl font-bold tracking-tight text-[var(--text-primary)]">
+                Drop image here
+              </h3>
+              <p className="text-[var(--text-secondary)]/50 text-sm max-w-xs">
+                Supports JPG, PNG and WebP formats
+              </p>
             </div>
             <label className="bg-[var(--theme-primary)] hover:opacity-90 text-white px-8 py-2.5 rounded-full text-sm font-bold cursor-pointer transition-all active:scale-95 shadow-lg shadow-black/20">
               Browse Files
@@ -292,7 +350,9 @@ const CanvasViewer: React.FC = () => {
                 type="file"
                 className="hidden"
                 accept="image/*,.arw,.cr2,.cr3,.nef,.orf,.raf,.rw2,.dng"
-                onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
+                onChange={(e) =>
+                  e.target.files?.[0] && handleFileUpload(e.target.files[0])
+                }
               />
             </label>
           </div>
@@ -304,12 +364,18 @@ const CanvasViewer: React.FC = () => {
       <canvas
         ref={canvasRef}
         className="object-contain shadow-2xl shadow-black/50 transition-shadow duration-300"
-        style={{ 
-          display: originalUrl ? 'block' : 'none',
+        style={{
+          display: originalUrl ? "block" : "none",
           transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom}) rotate(${rotation}deg)`,
-          transition: isDragging ? 'none' : 'transform 0.2s cubic-bezier(0.2, 0, 0, 1)',
-          imageRendering: zoom > 1.0 ? 'pixelated' : 'auto',
-          cursor: isPickerActive ? 'crosshair' : isDragging ? 'grabbing' : 'grab',
+          transition: isDragging
+            ? "none"
+            : "transform 0.2s cubic-bezier(0.2, 0, 0, 1)",
+          imageRendering: zoom > 1.0 ? "pixelated" : "auto",
+          cursor: isPickerActive
+            ? "crosshair"
+            : isDragging
+              ? "grabbing"
+              : "grab",
         }}
         onDoubleClick={resetZoom}
         onClick={handleCanvasClick}
@@ -320,8 +386,10 @@ const CanvasViewer: React.FC = () => {
         <>
           <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
             <div className="flex items-center gap-2 px-2 py-1 bg-[var(--bg-panel)]/20 safari-blur rounded-lg border border-[var(--border)] mr-2 group/zoom">
-              <span className="text-[10px] font-mono text-[var(--theme-primary)] min-w-[32px] text-center">{Math.round(zoom * 100)}%</span>
-              <button 
+              <span className="text-[10px] font-mono text-[var(--theme-primary)] min-w-[32px] text-center">
+                {Math.round(zoom * 100)}%
+              </span>
+              <button
                 onClick={resetZoom}
                 className="hover:text-[var(--theme-primary)] text-[var(--text-secondary)] transition-all cursor-pointer"
                 title="Reset zoom"
@@ -329,57 +397,65 @@ const CanvasViewer: React.FC = () => {
                 <RotateCcw size={10} />
               </button>
             </div>
-            <button 
+            <button
               onClick={() => handleZoom(0.2)}
               className="p-2 bg-[var(--bg-panel)]/20 hover:bg-[var(--bg-panel)]/20 rounded-lg safari-blur text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all border border-[var(--border)]"
             >
               <ZoomIn size={18} />
             </button>
-            <button 
+            <button
               onClick={() => handleZoom(-0.2)}
               className="p-2 bg-[var(--bg-panel)]/20 hover:bg-[var(--bg-panel)]/20 rounded-lg safari-blur text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all border border-[var(--border)]"
             >
               <ZoomOut size={18} />
             </button>
-            <button 
+            <button
               onClick={toggleFullscreen}
-              className={`p-2 bg-[var(--bg-panel)]/20 hover:bg-[var(--bg-panel)]/20 rounded-lg safari-blur transition-all border border-[var(--border)] ${isFullscreen ? 'text-[var(--theme-primary)]' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
+              className={`p-2 bg-[var(--bg-panel)]/20 hover:bg-[var(--bg-panel)]/20 rounded-lg safari-blur transition-all border border-[var(--border)] ${isFullscreen ? "text-[var(--theme-primary)]" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"}`}
             >
               <Maximize size={18} />
             </button>
           </div>
           <div className="absolute bottom-4 left-4 px-3 py-1.5 bg-[var(--bg-panel)]/20 safari-blur rounded-md text-[10px] font-mono text-[var(--text-tertiary)] tracking-wider uppercase border border-[var(--border)] z-20 flex gap-3">
             <span>
-              {dimensions ? (
-                dimensions.width >= 3840 ? '4K' :
-                dimensions.width >= 2560 ? 'QHD' :
-                dimensions.width >= 1920 ? 'FHD' :
-                dimensions.width >= 1280 ? 'HD' : 'SD'
-              ) : '---'}
-              {' '}
-              {fileName?.split('.').pop() || 'IMG'}
+              {dimensions
+                ? dimensions.width >= 3840
+                  ? "4K"
+                  : dimensions.width >= 2560
+                    ? "QHD"
+                    : dimensions.width >= 1920
+                      ? "FHD"
+                      : dimensions.width >= 1280
+                        ? "HD"
+                        : "SD"
+                : "---"}{" "}
+              {fileName?.split(".").pop() || "IMG"}
             </span>
             <span className="opacity-30">•</span>
-            <span>{dimensions ? `${dimensions.width}x${dimensions.height}` : '0x0'}</span>
+            <span>
+              {dimensions ? `${dimensions.width}x${dimensions.height}` : "0x0"}
+            </span>
             <span className="opacity-30">•</span>
             <span>sRGB</span>
             {previewWarning && (
               <>
                 <span className="opacity-30">•</span>
-                <span className="text-amber-400 normal-case">⚠ Preview quality</span>
+                <span className="text-amber-400 normal-case">
+                  ⚠ Preview quality
+                </span>
               </>
             )}
           </div>
           <div className="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
             <button
-              onClick={() => setRotation(r => (r - 90 + 360) % 360)}
+              onClick={() => setRotation((r) => (r - 90 + 360) % 360)}
               className="p-2 bg-[var(--bg-panel)]/20 hover:bg-[var(--bg-panel)]/20 rounded-lg safari-blur text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all border border-[var(--border)]"
               title="Rotate left"
             >
               <RotateCcw size={18} />
             </button>
             <button
-              onClick={() => setRotation(r => (r + 90) % 360)}
+              onClick={() => setRotation((r) => (r + 90) % 360)}
               className="p-2 bg-[var(--bg-panel)]/20 hover:bg-[var(--bg-panel)]/20 rounded-lg safari-blur text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all border border-[var(--border)]"
               title="Rotate right"
             >

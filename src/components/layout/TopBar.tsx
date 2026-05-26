@@ -73,7 +73,7 @@ const TopBar: React.FC = () => {
         <button onClick={() => dispatch(toggleLeftSidebar())} disabled={!hasImage} className="p-1 hover:bg-[var(--bg-hover)] rounded text-[var(--text-secondary)] disabled:opacity-30 disabled:cursor-not-allowed">
           {leftCollapsed ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}
         </button>
-        <h1 className="text-sm font-bold tracking-tight text-[var(--theme-primary)]">
+        <h1 className="text-sm font-bold tracking-tight">
           ChromaGrade
         </h1>
       </div>
