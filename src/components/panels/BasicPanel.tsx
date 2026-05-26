@@ -16,7 +16,6 @@ import {
   setBw,
   setHdr,
   setHdrLimit,
-  setVisualizeHdr,
   setSdrPreview,
   setSdrBrightness,
   setSdrContrast,

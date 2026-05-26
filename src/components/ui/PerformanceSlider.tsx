@@ -1,8 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useSelector } from 'react-redux';
 import { RotateCcw } from 'lucide-react';
-import { canvasEngine } from '../../lib/CanvasEngine';
-import type { RootState } from '../../store/store';
 
 interface PerformanceSliderProps {
   label: string;
@@ -21,7 +18,6 @@ const PerformanceSlider: React.FC<PerformanceSliderProps> = ({
 }) => {
   const [localValue, setLocalValue] = useState(value);
   const isDragging = useRef(false);
-  const currentGrading = useSelector((state: RootState) => state.grading);
 
   // Sync with Redux when it changes from outside (e.g. Undo/Redo)
   useEffect(() => {
