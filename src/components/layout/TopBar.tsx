@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../store/store';
 import { undo, redo, resetHistory } from '../../store/slices/historySlice';
 import { applySnapshot, resetGrading } from '../../store/slices/gradingSlice';
-import { applyBasicSnapshot } from '../../store/slices/basicSlice';
+import { applyBasicSnapshot, resetBasic } from '../../store/slices/basicSlice';
 import { setExportModalOpen, toggleLeftSidebar, resetViewport } from '../../store/slices/uiSlice';
 import { openModal } from '../../store/slices/colorTransferSlice';
 import { setImage, clearImage } from '../../store/slices/imageSlice';
@@ -130,7 +130,7 @@ const TopBar: React.FC = () => {
           Match Color
         </button>
         <button
-          onClick={() => { dispatch(resetGrading()); dispatch(resetHistory()); }}
+          onClick={() => { dispatch(resetGrading()); dispatch(resetBasic()); dispatch(resetHistory()); }}
           disabled={!hasImage}
           className="flex items-center gap-1.5 px-3 py-1 hover:bg-[var(--bg-hover)] rounded text-xs font-medium text-[var(--text-secondary)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
         >
