@@ -4,17 +4,28 @@ export const presence = `
 
   // Texture: 3x3 USM (fine detail)
   if (abs(u_textureAmt) > 0.001) {
+    // Gaussian 3x3
     vec3 blurT = vec3(0.0);
-    blurT += texture(u_texture, flippedCoord + vec2(-texel.x, -texel.y)).rgb;
-    blurT += texture(u_texture, flippedCoord + vec2( 0.0,     -texel.y)).rgb;
-    blurT += texture(u_texture, flippedCoord + vec2( texel.x, -texel.y)).rgb;
-    blurT += texture(u_texture, flippedCoord + vec2(-texel.x,  0.0    )).rgb;
-    blurT += texture(u_texture, flippedCoord + vec2( texel.x,  0.0    )).rgb;
-    blurT += texture(u_texture, flippedCoord + vec2(-texel.x,  texel.y)).rgb;
-    blurT += texture(u_texture, flippedCoord + vec2( 0.0,      texel.y)).rgb;
-    blurT += texture(u_texture, flippedCoord + vec2( texel.x,  texel.y)).rgb;
-    blurT /= 8.0;
-    color += (color - blurT) * u_textureAmt;
+    blurT += texture(u_texture, flippedCoord + vec2(-texel.x, -texel.y)).rgb * 1.0;
+    blurT += texture(u_texture, flippedCoord + vec2( 0.0,     -texel.y)).rgb * 2.0;
+    blurT += texture(u_texture, flippedCoord + vec2( texel.x, -texel.y)).rgb * 1.0;
+    blurT += texture(u_texture, flippedCoord + vec2(-texel.x,  0.0    )).rgb * 2.0;
+    blurT += texture(u_texture, flippedCoord                            ).rgb * 4.0;
+    blurT += texture(u_texture, flippedCoord + vec2( texel.x,  0.0    )).rgb * 2.0;
+    blurT += texture(u_texture, flippedCoord + vec2(-texel.x,  texel.y)).rgb * 1.0;
+    blurT += texture(u_texture, flippedCoord + vec2( 0.0,      texel.y)).rgb * 2.0;
+    blurT += texture(u_texture, flippedCoord + vec2( texel.x,  texel.y)).rgb * 1.0;
+    blurT /= 16.0;
+
+    // Scale: power curve for natural slider feel
+    float sharpAmt = sign(u_textureAmt) * pow(abs(u_textureAmt), 1.5);
+
+    // Luma-only to avoid color fringing
+    const vec3 luma = vec3(0.2126, 0.7152, 0.0722);
+    float detail = dot(color - blurT, luma);
+
+    color += detail * sharpAmt;
+    color = clamp(color, 0.0, 1.0);
   }
 
   // Clarity: 5x5 USM (broad edges)
