@@ -81,6 +81,16 @@ const CanvasViewer: React.FC = () => {
     basic.texture,
     basic.clarity,
     basic.dehaze,
+    basic.hdr,
+    basic.hdrLimit,
+    basic.visualizeHdr,
+    basic.sdrPreview,
+    basic.sdrBrightness,
+    basic.sdrContrast,
+    basic.sdrHighlights,
+    basic.sdrShadows,
+    basic.sdrWhites,
+    basic.sdrHighlightSat,
     originalUrl
   ]);
 

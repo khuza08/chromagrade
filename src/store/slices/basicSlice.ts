@@ -13,6 +13,10 @@ export interface BasicState {
   bw: boolean;
   hdr: boolean;
   hdrLimit: number;
+  hdrGamma: number;
+  hdrIntensity: number;
+  hdrLightAdapt: number;
+  hdrColorAdapt: number;
   visualizeHdr: boolean;
   sdrPreview: boolean;
   sdrBrightness: number;
@@ -37,7 +41,11 @@ const initialState: BasicState = {
   profile: "Color",
   bw: false,
   hdr: false,
-  hdrLimit: 4,
+  hdrLimit: 1,
+  hdrGamma: 0,
+  hdrIntensity: 0,
+  hdrLightAdapt: 0,
+  hdrColorAdapt: 0,
   visualizeHdr: false,
   sdrPreview: false,
   sdrBrightness: 0,
@@ -90,6 +98,18 @@ export const basicSlice = createSlice({
     setHdrLimit: (state, action: PayloadAction<number>) => {
       state.hdrLimit = action.payload;
     },
+    setHdrGamma: (state, action: PayloadAction<number>) => {
+      state.hdrGamma = action.payload;
+    },
+    setHdrIntensity: (state, action: PayloadAction<number>) => {
+      state.hdrIntensity = action.payload;
+    },
+    setHdrLightAdapt: (state, action: PayloadAction<number>) => {
+      state.hdrLightAdapt = action.payload;
+    },
+    setHdrColorAdapt: (state, action: PayloadAction<number>) => {
+      state.hdrColorAdapt = action.payload;
+    },
     setVisualizeHdr: (state, action: PayloadAction<boolean>) => {
       state.visualizeHdr = action.payload;
     },
@@ -140,6 +160,10 @@ export const {
   setBw,
   setHdr,
   setHdrLimit,
+  setHdrGamma,
+  setHdrIntensity,
+  setHdrLightAdapt,
+  setHdrColorAdapt,
   setVisualizeHdr,
   setSdrPreview,
   setSdrBrightness,

@@ -8,6 +8,7 @@ import { presence } from './modules/presence.glsl';
 import { saturation } from './modules/saturation.glsl';
 import { curves } from './modules/curves.glsl';
 import { hsl } from './modules/hsl.glsl';
+import { hdr } from './modules/hdr.glsl';
 import { clipping } from './modules/clipping.glsl';
 
 export const fragmentShaderSource = `#version 300 es
@@ -29,6 +30,7 @@ ${presence}
 ${saturation}
 ${curves}
 ${hsl}
+${hdr}
 ${clipping}
 }
 `;

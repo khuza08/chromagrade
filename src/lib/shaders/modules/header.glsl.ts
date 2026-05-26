@@ -38,6 +38,22 @@ uniform sampler2D u_hslHue;
 uniform sampler2D u_hslSat;
 uniform sampler2D u_hslLum;
 
+// HDR
+uniform bool u_hdr;
+uniform float u_hdrLimit;
+uniform float u_hdrGamma;
+uniform float u_hdrIntensity;
+uniform float u_hdrLightAdapt;
+uniform float u_hdrColorAdapt;
+uniform bool u_visualizeHdr;
+uniform bool u_sdrPreview;
+uniform float u_sdrBrightness;
+uniform float u_sdrContrast;
+uniform float u_sdrHighlights;
+uniform float u_sdrShadows;
+uniform float u_sdrWhites;
+uniform float u_sdrHighlightSat;
+
 // Clipping Toggles
 uniform bool u_showShadowClipping;
 uniform bool u_showHighlightClipping;

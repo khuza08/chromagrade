@@ -189,6 +189,20 @@ export class CanvasEngine {
       "u_textureAmt",
       "u_clarity",
       "u_dehaze",
+      "u_hdr",
+      "u_hdrLimit",
+      "u_hdrGamma",
+      "u_hdrIntensity",
+      "u_hdrLightAdapt",
+      "u_hdrColorAdapt",
+      "u_visualizeHdr",
+      "u_sdrPreview",
+      "u_sdrBrightness",
+      "u_sdrContrast",
+      "u_sdrHighlights",
+      "u_sdrShadows",
+      "u_sdrWhites",
+      "u_sdrHighlightSat",
       "u_contrast",
       "u_saturation",
       "u_vibrance",
@@ -433,6 +447,20 @@ export class CanvasEngine {
       texture: basicState.texture,
       clarity: basicState.clarity,
       dehaze: basicState.dehaze,
+      hdr: basicState.hdr,
+      hdrLimit: basicState.hdrLimit,
+      hdrGamma: basicState.hdrGamma,
+      hdrIntensity: basicState.hdrIntensity,
+      hdrLightAdapt: basicState.hdrLightAdapt,
+      hdrColorAdapt: basicState.hdrColorAdapt,
+      visualizeHdr: basicState.visualizeHdr,
+      sdrPreview: basicState.sdrPreview,
+      sdrBrightness: basicState.sdrBrightness,
+      sdrContrast: basicState.sdrContrast,
+      sdrHighlights: basicState.sdrHighlights,
+      sdrShadows: basicState.sdrShadows,
+      sdrWhites: basicState.sdrWhites,
+      sdrHighlightSat: basicState.sdrHighlightSat,
     });
     if (serialized === this._lastParams && !this._needsRender) return;
 
@@ -475,6 +503,20 @@ export class CanvasEngine {
     gl.uniform1f(this._uniforms["u_textureAmt"], (basicState.texture ?? 0) / 100);
     gl.uniform1f(this._uniforms["u_clarity"], (basicState.clarity ?? 0) / 100);
     gl.uniform1f(this._uniforms["u_dehaze"], (basicState.dehaze ?? 0) / 100);
+    gl.uniform1i(this._uniforms["u_hdr"], basicState.hdr ? 1 : 0);
+    gl.uniform1f(this._uniforms["u_hdrLimit"], basicState.hdrLimit ?? 4);
+    gl.uniform1f(this._uniforms["u_hdrGamma"], basicState.hdrGamma ?? 0);
+    gl.uniform1f(this._uniforms["u_hdrIntensity"], basicState.hdrIntensity ?? 0);
+    gl.uniform1f(this._uniforms["u_hdrLightAdapt"], basicState.hdrLightAdapt ?? 0);
+    gl.uniform1f(this._uniforms["u_hdrColorAdapt"], basicState.hdrColorAdapt ?? 0);
+    gl.uniform1i(this._uniforms["u_visualizeHdr"], basicState.visualizeHdr ? 1 : 0);
+    gl.uniform1i(this._uniforms["u_sdrPreview"], basicState.sdrPreview ? 1 : 0);
+    gl.uniform1f(this._uniforms["u_sdrBrightness"], basicState.sdrBrightness ?? 0);
+    gl.uniform1f(this._uniforms["u_sdrContrast"], basicState.sdrContrast ?? 0);
+    gl.uniform1f(this._uniforms["u_sdrHighlights"], basicState.sdrHighlights ?? 0);
+    gl.uniform1f(this._uniforms["u_sdrShadows"], basicState.sdrShadows ?? 0);
+    gl.uniform1f(this._uniforms["u_sdrWhites"], basicState.sdrWhites ?? 0);
+    gl.uniform1f(this._uniforms["u_sdrHighlightSat"], basicState.sdrHighlightSat ?? 0);
     gl.uniform1f(this._uniforms["u_contrast"], (params.contrast + 100) / 100);
     gl.uniform1f(
       this._uniforms["u_saturation"],
@@ -738,6 +780,20 @@ export class CanvasEngine {
     setUni("u_textureAmt", "uniform1f", (basicState.texture ?? 0) / 100);
     setUni("u_clarity", "uniform1f", (basicState.clarity ?? 0) / 100);
     setUni("u_dehaze", "uniform1f", (basicState.dehaze ?? 0) / 100);
+    setUni("u_hdr", "uniform1i", basicState.hdr ? 1 : 0);
+    setUni("u_hdrLimit", "uniform1f", basicState.hdrLimit ?? 4);
+    setUni("u_hdrGamma", "uniform1f", basicState.hdrGamma ?? 0);
+    setUni("u_hdrIntensity", "uniform1f", basicState.hdrIntensity ?? 0);
+    setUni("u_hdrLightAdapt", "uniform1f", basicState.hdrLightAdapt ?? 0);
+    setUni("u_hdrColorAdapt", "uniform1f", basicState.hdrColorAdapt ?? 0);
+    setUni("u_visualizeHdr", "uniform1i", basicState.visualizeHdr ? 1 : 0);
+    setUni("u_sdrPreview", "uniform1i", basicState.sdrPreview ? 1 : 0);
+    setUni("u_sdrBrightness", "uniform1f", basicState.sdrBrightness ?? 0);
+    setUni("u_sdrContrast", "uniform1f", basicState.sdrContrast ?? 0);
+    setUni("u_sdrHighlights", "uniform1f", basicState.sdrHighlights ?? 0);
+    setUni("u_sdrShadows", "uniform1f", basicState.sdrShadows ?? 0);
+    setUni("u_sdrWhites", "uniform1f", basicState.sdrWhites ?? 0);
+    setUni("u_sdrHighlightSat", "uniform1f", basicState.sdrHighlightSat ?? 0);
     setUni("u_contrast", "uniform1f", (params.contrast + 100) / 100);
     setUni("u_saturation", "uniform1f", (params.saturation + 100) / 100);
     setUni("u_temperature", "uniform1f", params.temperature * TEMP_SCALE);

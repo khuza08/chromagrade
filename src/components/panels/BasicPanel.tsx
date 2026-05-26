@@ -129,7 +129,10 @@ const BasicPanel: React.FC = () => {
           <option value="Color">Color</option>
           <option value="Monochrome">Monochrome</option>
         </select>
-        <button className="p-1 hover:bg-[var(--bg-hover)] rounded" title="Browse Profiles">
+        <button
+          className="p-1 hover:bg-[var(--bg-hover)] rounded"
+          title="Browse Profiles"
+        >
           <LayoutGrid size={14} />
         </button>
       </div>
@@ -153,40 +156,40 @@ const BasicPanel: React.FC = () => {
           </select>
         </div>
 
-      <div className="space-y-3">
-        <PerformanceSlider
-          label="Temp"
-          min={-100}
-          max={100}
-          value={grading.temperature}
-          trackGradient="linear-gradient(to right, #4a90d9, #8b5cf6, #888, #d4a017, #f5a623)"
-          showTicks={true}
-          onChange={(v) => {
-            dispatch(setTemperature(v));
-            dispatch(setWbPreset("custom"));
-          }}
-          onReset={() => {
-            dispatch(setTemperature(0));
-            dispatch(setWbPreset("custom"));
-          }}
-        />
-        <PerformanceSlider
-          label="Tint"
-          min={-100}
-          max={100}
-          value={grading.tint}
-          trackGradient="linear-gradient(to right, #4caf50, #888, #e91e8c)"
-          showTicks={true}
-          onChange={(v) => {
-            dispatch(setTint(v));
-            dispatch(setWbPreset("custom"));
-          }}
-          onReset={() => {
-            dispatch(setTint(0));
-            dispatch(setWbPreset("custom"));
-          }}
-        />
-      </div>
+        <div className="space-y-3">
+          <PerformanceSlider
+            label="Temp"
+            min={-100}
+            max={100}
+            value={grading.temperature}
+            trackGradient="linear-gradient(to right, #4a90d9, #8b5cf6, #888, #d4a017, #f5a623)"
+            showTicks={true}
+            onChange={(v) => {
+              dispatch(setTemperature(v));
+              dispatch(setWbPreset("custom"));
+            }}
+            onReset={() => {
+              dispatch(setTemperature(0));
+              dispatch(setWbPreset("custom"));
+            }}
+          />
+          <PerformanceSlider
+            label="Tint"
+            min={-100}
+            max={100}
+            value={grading.tint}
+            trackGradient="linear-gradient(to right, #4caf50, #888, #e91e8c)"
+            showTicks={true}
+            onChange={(v) => {
+              dispatch(setTint(v));
+              dispatch(setWbPreset("custom"));
+            }}
+            onReset={() => {
+              dispatch(setTint(0));
+              dispatch(setWbPreset("custom"));
+            }}
+          />
+        </div>
       </div>
 
       <div className="flex items-center justify-center py-1.5 border-b border-[var(--border)]">
@@ -247,11 +250,11 @@ const BasicPanel: React.FC = () => {
       </div>
 
       <div className="flex items-center justify-center py-1.5 border-b border-[var(--border)]">
-        <span className="text-[11px] text-[var(--text-secondary)]">Presence</span>
+        <span className="text-[11px] text-[var(--text-secondary)]">
+          Presence
+        </span>
       </div>
-      <div
-        className="px-3 py-2 space-y-2 border-b border-[var(--border)]"
-      >
+      <div className="px-3 py-2 space-y-2 border-b border-[var(--border)]">
         <PerformanceSlider
           label="Texture"
           min={-100}
@@ -302,26 +305,18 @@ const BasicPanel: React.FC = () => {
       </div>
 
       {basic.hdr && (
-        <div className="mt-4 opacity-60" title="Shader support coming soon">
+        <div className="mt-4">
           <SectionHeader>HDR</SectionHeader>
           <div className="px-3 space-y-3">
             <PerformanceSlider
               label="HDR Limit"
-              min={0}
-              max={10}
+              min={1}
+              max={2}
+              step={0.1}
               value={basic.hdrLimit}
               onChange={(v) => dispatch(setHdrLimit(v))}
-              onReset={() => dispatch(setHdrLimit(4))}
+              onReset={() => dispatch(setHdrLimit(1))}
             />
-            <label className="flex items-center gap-2 text-[10px] font-bold text-[var(--text-secondary)]">
-              <input
-                type="checkbox"
-                checked={basic.visualizeHdr}
-                onChange={(e) => dispatch(setVisualizeHdr(e.target.checked))}
-                className="accent-[var(--theme-primary)]"
-              />
-              Visualize HDR
-            </label>
 
             <div className="border border-[var(--border)] rounded mt-2">
               <button
