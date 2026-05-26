@@ -479,6 +479,8 @@ export class CanvasEngine {
       sdrShadows: basicState.sdrShadows,
       sdrWhites: basicState.sdrWhites,
       sdrHighlightSat: basicState.sdrHighlightSat,
+      lutActiveLut: (store.getState() as any).lut?.activeLut,
+      lutStrength: (store.getState() as any).lut?.strength,
     });
     if (serialized === this._lastParams && !this._needsRender) return;
 
