@@ -70,7 +70,7 @@ const TopBar: React.FC = () => {
   return (
     <div className="h-12 bg-[var(--bg-panel)] border-b border-[var(--border)] flex items-center justify-between px-4 z-50">
       <div className="flex items-center gap-4">
-        <button onClick={() => dispatch(toggleLeftSidebar())} className="p-1 hover:bg-[var(--bg-hover)] rounded text-[var(--text-secondary)]">
+        <button onClick={() => dispatch(toggleLeftSidebar())} disabled={!hasImage} className="p-1 hover:bg-[var(--bg-hover)] rounded text-[var(--text-secondary)] disabled:opacity-30 disabled:cursor-not-allowed">
           {leftCollapsed ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}
         </button>
         <h1 className="text-sm font-bold tracking-tight text-[var(--theme-primary)]">
@@ -142,9 +142,12 @@ const TopBar: React.FC = () => {
           onClick={() => {
             if (!confirm('Clear the workspace? This will remove the current image and all grading.')) return;
             canvasEngine.clearImage();
+            canvasEngine.clearLut();
             dispatch(clearImage());
             dispatch(resetGrading());
+            dispatch(resetBasic());
             dispatch(resetHistory());
+            dispatch(setActiveLut(null));
           }}
           disabled={!hasImage}
           className="flex items-center gap-1.5 px-3 py-1 hover:bg-[var(--bg-hover)] rounded text-xs font-medium text-[var(--accent-red,#f87171)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"

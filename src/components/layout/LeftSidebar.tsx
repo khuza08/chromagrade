@@ -4,8 +4,16 @@ import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../../store/store';
 import EmptyStateOverlay from '../ui/EmptyStateOverlay';
 import { applyPartialSnapshot } from '../../store/slices/gradingSlice';
-import { CanvasEngine } from '../../lib/CanvasEngine';
+import { CanvasEngine, canvasEngine } from '../../lib/CanvasEngine';
 import type { GradingState } from '../../store/slices/gradingSlice';
+import { setActiveLut, setLutSize } from '../../store/slices/lutSlice';
+import { parseCube, LutParseError } from '../../lib/lut/parseCube';
+
+const BUILT_IN_LUTS = [
+  'BlueArchitecture','BlueHour','ColdChrome','CrispAutumn','DarkAndSomber',
+  'HardBoost','LongBeachMorning','LushGreen','MagicHour','NaturalBoost',
+  'OrangeAndBlue','SoftBlackAndWhite','Waves',
+];
 
 // Neutral base grading state for preset previews
 const neutralGrading: GradingState = {
@@ -37,6 +45,20 @@ const LeftSidebar: React.FC = () => {
   const prebuiltPresets = useSelector((state: RootState) => state.presets.prebuiltPresets);
   const userPresets = useSelector((state: RootState) => state.presets.userPresets);
   const originalUrl = useSelector((state: RootState) => state.image.originalUrl);
+  const activeLut = useSelector((state: RootState) => state.lut.activeLut);
+
+  async function handleLut(name: string) {
+    try {
+      const res = await fetch(`/luts/${name}.cube`);
+      if (!res.ok) throw new Error();
+      const { size, data } = parseCube(await res.text());
+      canvasEngine.loadLut(data, size);
+      dispatch(setActiveLut(name));
+      dispatch(setLutSize(size));
+    } catch (e) {
+      if (e instanceof LutParseError) console.warn(e.message);
+    }
+  }
   const allPresets = [...userPresets, ...prebuiltPresets];
 
   const [previews, setPreviews] = useState<Record<string, string>>({});
@@ -131,9 +153,13 @@ const LeftSidebar: React.FC = () => {
             </h2>
           </div>
           <div className="space-y-1">
-            {['Cinematic', 'Vintage', 'Muted'].map((lut) => (
-              <div key={lut} className="px-2 py-1.5 rounded text-xs hover:bg-[var(--bg-hover)] cursor-pointer text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors hidden lg:block">
-                {lut}
+            {BUILT_IN_LUTS.map((name) => (
+              <div
+                key={name}
+                onClick={() => handleLut(name)}
+                className={`px-2 py-1.5 rounded text-xs cursor-pointer transition-colors hidden lg:block ${activeLut === name ? 'bg-[var(--bg-control)] text-[var(--text-primary)] font-semibold' : 'text-[var(--text-secondary)] hover:bg-[var(--bg-hover)] hover:text-[var(--text-primary)]'}`}
+              >
+                {name.replace(/([A-Z])/g, ' $1').trim()}
               </div>
             ))}
             <div className="lg:hidden flex flex-col items-center gap-4 py-2">
