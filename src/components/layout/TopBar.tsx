@@ -8,6 +8,7 @@ import { applyBasicSnapshot, resetBasic } from '../../store/slices/basicSlice';
 import { setExportModalOpen, toggleLeftSidebar, resetViewport } from '../../store/slices/uiSlice';
 import { openModal } from '../../store/slices/colorTransferSlice';
 import { setImage, clearImage } from '../../store/slices/imageSlice';
+import { setActiveLut } from '../../store/slices/lutSlice';
 import { canvasEngine } from '../../lib/CanvasEngine';
 import { saveWorkspace, loadWorkspace, workspaceToObjectUrl } from '../../utils/workspaceIO';
 
@@ -130,7 +131,7 @@ const TopBar: React.FC = () => {
           Match Color
         </button>
         <button
-          onClick={() => { dispatch(resetGrading()); dispatch(resetBasic()); dispatch(resetHistory()); }}
+          onClick={() => { dispatch(resetGrading()); dispatch(resetBasic()); dispatch(resetHistory()); canvasEngine.clearLut(); dispatch(setActiveLut(null)); }}
           disabled={!hasImage}
           className="flex items-center gap-1.5 px-3 py-1 hover:bg-[var(--bg-hover)] rounded text-xs font-medium text-[var(--text-secondary)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
         >
