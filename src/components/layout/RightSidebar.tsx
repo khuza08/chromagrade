@@ -20,6 +20,7 @@ import CurvesPanel from "../panels/CurvesPanel";
 import HSLPanel from "../panels/HSLPanel";
 import IDPresetsPanel from "../panels/IDPresetsPanel";
 import BasicPanel from "../panels/BasicPanel";
+import LUTPanel from "../panels/LUTPanel";
 
 const ComingSoon = () => (
   <div className="p-4 text-sm text-[var(--text-secondary)] italic">
@@ -60,7 +61,7 @@ const RightSidebar: React.FC = () => {
           <HSLPanel />
         </AccordionSection>
         <AccordionSection title="LUT" icon={Palette}>
-          <ComingSoon />
+          <LUTPanel />
         </AccordionSection>
         <AccordionSection title="AI Grade" icon={Sparkles}>
           <ComingSoon />

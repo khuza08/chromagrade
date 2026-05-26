@@ -36,6 +36,9 @@ export class CanvasEngine {
   private _uniforms: Record<string, WebGLUniformLocation> = {};
   private _needsRender: boolean = false;
   private _lastParams: string = "";
+  private _lutTexture: WebGLTexture | null = null;
+  private _lutSize: number = 33;
+  private _dummyLutTexture: WebGLTexture | null = null;
 
   public getCanvas(): HTMLCanvasElement | null {
     return this.targetCanvas;
@@ -221,6 +224,10 @@ export class CanvasEngine {
       "u_hslLum",
       "u_showShadowClipping",
       "u_showHighlightClipping",
+      "u_lut",
+      "u_lutEnabled",
+      "u_lutStrength",
+      "u_lutSize",
     ];
     uniforms.forEach((name) => {
       const location = gl.getUniformLocation(this.program!, name);
@@ -299,6 +306,17 @@ export class CanvasEngine {
       new Float32Array([0, 0, 1, 0, 0, 1, 0, 1, 1, 0, 1, 1]),
       gl.STATIC_DRAW,
     );
+
+    // Create a 1×1×1 dummy TEXTURE_3D on unit 8 so u_lut always has a
+    // dedicated 3D sampler unit — set u_lut=8 in render() after useProgram.
+    const dummyLut = gl.createTexture()!;
+    gl.activeTexture(gl.TEXTURE8);
+    gl.bindTexture(gl.TEXTURE_3D, dummyLut);
+    gl.texImage3D(gl.TEXTURE_3D, 0, gl.RGB8, 1, 1, 1, 0, gl.RGB, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0]));
+    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    this._dummyLutTexture = dummyLut;
+    // NOTE: u_lut uniform is set to 8 in render() after gl.useProgram()
   }
 
   public async loadImage(
@@ -604,10 +622,48 @@ export class CanvasEngine {
       histState.showHighlightClipping ? 1 : 0,
     );
 
+    // LUT — always bind unit 8 to a 3D texture so u_lut never aliases u_texture (unit 0)
+    gl.activeTexture(gl.TEXTURE8);
+    gl.bindTexture(gl.TEXTURE_3D, this._lutTexture ?? this._dummyLutTexture);
+    gl.uniform1i(this._uniforms["u_lut"], 8);
+    const lutEnabled = this._lutTexture !== null;
+    gl.uniform1i(this._uniforms["u_lutEnabled"], lutEnabled ? 1 : 0);
+    if (lutEnabled) {
+      const lutStrength = (store.getState() as any).lut?.strength ?? 100;
+      gl.uniform1f(this._uniforms["u_lutStrength"], lutStrength / 100);
+      gl.uniform1i(this._uniforms["u_lutSize"], this._lutSize);
+    }
+
     gl.drawArrays(gl.TRIANGLES, 0, 6);
 
     // Update Histogram Worker (Throttled)
     this._dispatchToWorker(params);
+  }
+
+  public loadLut(data: Float32Array, size: number): void {
+    const gl = this.gl;
+    if (!gl) return;
+    if (this._lutTexture) { gl.deleteTexture(this._lutTexture); this._lutTexture = null; }
+    const tex = gl.createTexture()!;
+    gl.activeTexture(gl.TEXTURE8);
+    gl.bindTexture(gl.TEXTURE_3D, tex);
+    gl.texImage3D(gl.TEXTURE_3D, 0, gl.RGB16F, size, size, size, 0, gl.RGB, gl.FLOAT, data);
+    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
+    this._lutTexture = tex;
+    this._lutSize = size;
+    this._needsRender = true;
+  }
+
+  public clearLut(): void {
+    const gl = this.gl;
+    if (!gl) return;
+    if (this._lutTexture) { gl.deleteTexture(this._lutTexture); this._lutTexture = null; }
+    this._lutSize = 33;
+    this._needsRender = true;
   }
 
   public updateCurveTextures(curves: CurvesState) {
@@ -903,6 +959,18 @@ export class CanvasEngine {
     gl.enableVertexAttribArray(tcLoc);
     gl.bindBuffer(gl.ARRAY_BUFFER, tBuf);
     gl.vertexAttribPointer(tcLoc, 2, gl.FLOAT, false, 0, 0);
+
+    // LUT
+    const exportLutEnabled = this._lutTexture !== null;
+    setUni("u_lutEnabled", "uniform1i", exportLutEnabled ? 1 : 0);
+    if (exportLutEnabled) {
+      const lutStrength = (store.getState() as any).lut?.strength ?? 100;
+      gl.activeTexture(gl.TEXTURE8);
+      gl.bindTexture(gl.TEXTURE_3D, this._lutTexture);
+      setUni("u_lut", "uniform1i", 8);
+      setUni("u_lutStrength", "uniform1f", lutStrength / 100);
+      setUni("u_lutSize", "uniform1i", this._lutSize);
+    }
 
     gl.drawArrays(gl.TRIANGLES, 0, 6);
 

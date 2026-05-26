@@ -58,6 +58,12 @@ uniform float u_sdrHighlightSat;
 uniform bool u_showShadowClipping;
 uniform bool u_showHighlightClipping;
 
+// LUT
+uniform highp sampler3D u_lut;
+uniform bool      u_lutEnabled;
+uniform float     u_lutStrength;
+uniform int       u_lutSize;
+
 in vec2 v_texCoord;
 out vec4 outColor;
 `;

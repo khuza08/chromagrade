@@ -8,6 +8,7 @@ import histogramReducer from './slices/histogramSlice';
 import presetsReducer from './slices/presetsSlice';
 import colorTransferReducer from './slices/colorTransferSlice';
 import basicReducer from './slices/basicSlice';
+import lutReducer from './slices/lutSlice';
 import { historyMiddleware } from './middleware/historyMiddleware';
 import { persistMiddleware } from './middleware/persistMiddleware';
 
@@ -22,6 +23,7 @@ export const store = configureStore({
     presets: presetsReducer,
     colorTransfer: colorTransferReducer,
     basic: basicReducer,
+    lut: lutReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(historyMiddleware, persistMiddleware),

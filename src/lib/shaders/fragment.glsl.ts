@@ -9,6 +9,7 @@ import { saturation } from './modules/saturation.glsl';
 import { curves } from './modules/curves.glsl';
 import { hsl } from './modules/hsl.glsl';
 import { hdr } from './modules/hdr.glsl';
+import { lut } from './modules/lut.glsl';
 import { clipping } from './modules/clipping.glsl';
 
 export const fragmentShaderSource = `#version 300 es
@@ -31,6 +32,7 @@ ${saturation}
 ${curves}
 ${hsl}
 ${hdr}
+${lut}
 ${clipping}
 }
 `;

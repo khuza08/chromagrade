@@ -24,6 +24,7 @@ const CanvasViewer: React.FC = () => {
   const { curves } = useSelector((state: RootState) => state.grading);
   const gradingParams = useSelector((state: RootState) => state.grading);
   const basic = useSelector((state: RootState) => state.basic);
+  const lut = useSelector((state: RootState) => state.lut);
   const [zoom, setZoom] = useState(1.0);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [rotation, setRotation] = useState(0);
@@ -95,6 +96,8 @@ const CanvasViewer: React.FC = () => {
     basic.sdrShadows,
     basic.sdrWhites,
     basic.sdrHighlightSat,
+    lut.activeLut,
+    lut.strength,
     originalUrl
   ]);
 
