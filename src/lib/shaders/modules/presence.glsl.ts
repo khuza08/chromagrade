@@ -30,18 +30,61 @@ export const presence = `
 
   // Clarity: 5x5 USM (broad edges)
   if (abs(u_clarity) > 0.001) {
+    // True 5x5 Gaussian kernel:
+    // 1  4  6  4  1
+    // 4 16 24 16  4
+    // 6 24 36 24  6
+    // 4 16 24 16  4
+    // 1  4  6  4  1
+    // sum = 256
+
     vec3 blurC = vec3(0.0);
-    vec2 o2 = texel * 2.0;
-    blurC += texture(u_texture, flippedCoord + vec2(-o2.x, -o2.y)).rgb;
-    blurC += texture(u_texture, flippedCoord + vec2( 0.0,  -o2.y)).rgb;
-    blurC += texture(u_texture, flippedCoord + vec2( o2.x, -o2.y)).rgb;
-    blurC += texture(u_texture, flippedCoord + vec2(-o2.x,  0.0 )).rgb;
-    blurC += texture(u_texture, flippedCoord + vec2( o2.x,  0.0 )).rgb;
-    blurC += texture(u_texture, flippedCoord + vec2(-o2.x,  o2.y)).rgb;
-    blurC += texture(u_texture, flippedCoord + vec2( 0.0,   o2.y)).rgb;
-    blurC += texture(u_texture, flippedCoord + vec2( o2.x,  o2.y)).rgb;
-    blurC /= 8.0;
-    color += (color - blurC) * u_clarity;
+    vec2 t = texel;
+
+    blurC += texture(u_texture, flippedCoord + vec2(-2.0*t.x, -2.0*t.y)).rgb *  1.0;
+    blurC += texture(u_texture, flippedCoord + vec2(-1.0*t.x, -2.0*t.y)).rgb *  4.0;
+    blurC += texture(u_texture, flippedCoord + vec2( 0.0,     -2.0*t.y)).rgb *  6.0;
+    blurC += texture(u_texture, flippedCoord + vec2( 1.0*t.x, -2.0*t.y)).rgb *  4.0;
+    blurC += texture(u_texture, flippedCoord + vec2( 2.0*t.x, -2.0*t.y)).rgb *  1.0;
+
+    blurC += texture(u_texture, flippedCoord + vec2(-2.0*t.x, -1.0*t.y)).rgb *  4.0;
+    blurC += texture(u_texture, flippedCoord + vec2(-1.0*t.x, -1.0*t.y)).rgb * 16.0;
+    blurC += texture(u_texture, flippedCoord + vec2( 0.0,     -1.0*t.y)).rgb * 24.0;
+    blurC += texture(u_texture, flippedCoord + vec2( 1.0*t.x, -1.0*t.y)).rgb * 16.0;
+    blurC += texture(u_texture, flippedCoord + vec2( 2.0*t.x, -1.0*t.y)).rgb *  4.0;
+
+    blurC += texture(u_texture, flippedCoord + vec2(-2.0*t.x,  0.0    )).rgb *  6.0;
+    blurC += texture(u_texture, flippedCoord + vec2(-1.0*t.x,  0.0    )).rgb * 24.0;
+    blurC += texture(u_texture, flippedCoord                            ).rgb * 36.0;
+    blurC += texture(u_texture, flippedCoord + vec2( 1.0*t.x,  0.0    )).rgb * 24.0;
+    blurC += texture(u_texture, flippedCoord + vec2( 2.0*t.x,  0.0    )).rgb *  6.0;
+
+    blurC += texture(u_texture, flippedCoord + vec2(-2.0*t.x,  1.0*t.y)).rgb *  4.0;
+    blurC += texture(u_texture, flippedCoord + vec2(-1.0*t.x,  1.0*t.y)).rgb * 16.0;
+    blurC += texture(u_texture, flippedCoord + vec2( 0.0,      1.0*t.y)).rgb * 24.0;
+    blurC += texture(u_texture, flippedCoord + vec2( 1.0*t.x,  1.0*t.y)).rgb * 16.0;
+    blurC += texture(u_texture, flippedCoord + vec2( 2.0*t.x,  1.0*t.y)).rgb *  4.0;
+
+    blurC += texture(u_texture, flippedCoord + vec2(-2.0*t.x,  2.0*t.y)).rgb *  1.0;
+    blurC += texture(u_texture, flippedCoord + vec2(-1.0*t.x,  2.0*t.y)).rgb *  4.0;
+    blurC += texture(u_texture, flippedCoord + vec2( 0.0,      2.0*t.y)).rgb *  6.0;
+    blurC += texture(u_texture, flippedCoord + vec2( 1.0*t.x,  2.0*t.y)).rgb *  4.0;
+    blurC += texture(u_texture, flippedCoord + vec2( 2.0*t.x,  2.0*t.y)).rgb *  1.0;
+
+    blurC /= 256.0;
+
+    // Luma-only, same power curve as sharpness
+    const vec3 luma = vec3(0.2126, 0.7152, 0.0722);
+    float detail = dot(color - blurC, luma);
+
+    // Midtone mask — clarity should affect midtones more than highlights/shadows
+    float luminance = dot(color, luma);
+    float midtoneMask = 1.0 - abs(luminance * 2.0 - 1.0); // peaks at 0.5 luma
+
+    float clarityAmt = sign(u_clarity) * pow(abs(u_clarity), 1.5);
+
+    color += detail * clarityAmt * midtoneMask;
+    color = clamp(color, 0.0, 1.0);
   }
 
   // Dehaze: contrast + saturation + black-point lift
