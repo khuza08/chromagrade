@@ -5,10 +5,11 @@ import {
   addPreset,
   deletePreset,
   importPresets,
+  setActivePresetId,
 } from "../../store/slices/presetsSlice";
 import type { Preset } from "../../store/slices/presetsSlice";
-import { applyPartialSnapshot } from "../../store/slices/gradingSlice";
-import { applyBasicSnapshot } from "../../store/slices/basicSlice";
+import { applyPartialSnapshot, resetGrading } from "../../store/slices/gradingSlice";
+import { applyBasicSnapshot, resetBasic } from "../../store/slices/basicSlice";
 import type { GradingState } from "../../store/slices/gradingSlice";
 import PresetCard from "../ui/PresetCard";
 import {
@@ -79,7 +80,7 @@ const isGradeChanged = (grade: GradingState): boolean => {
 
 const IDPresetsPanel: React.FC = () => {
   const dispatch = useDispatch();
-  const { prebuiltPresets, userPresets } = useSelector(
+  const { prebuiltPresets, userPresets, activePresetId } = useSelector(
     (state: RootState) => state.presets,
   );
   const currentGrading = useSelector((state: RootState) => state.grading);
@@ -123,9 +124,17 @@ const IDPresetsPanel: React.FC = () => {
         return next;
       });
     } else {
+      // Toggle off if already active — reset to neutral
+      if (activePresetId === preset.id) {
+        dispatch(resetGrading());
+        dispatch(resetBasic());
+        dispatch(setActivePresetId(null));
+        return;
+      }
       dispatch(applyPartialSnapshot(preset.parameters));
       if (preset.basicParameters)
         dispatch(applyBasicSnapshot(preset.basicParameters as any));
+      dispatch(setActivePresetId(preset.id));
       setSelectedPresetIds(new Set([preset.id]));
     }
   };
@@ -327,7 +336,7 @@ const IDPresetsPanel: React.FC = () => {
               <PresetCard
                 key={preset.id}
                 preset={preset}
-                isSelected={selectedPresetIds.has(preset.id)}
+                isSelected={activePresetId === preset.id}
                 onClick={(e) => handlePresetClick(e, preset)}
                 onDelete={
                   preset.category === "My Presets"

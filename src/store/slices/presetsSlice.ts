@@ -15,6 +15,7 @@ export interface Preset {
 interface PresetsState {
   prebuiltPresets: Preset[];
   userPresets: Preset[];
+  activePresetId: string | null;
 }
 
 const loadUserPresets = (): Preset[] => {
@@ -30,6 +31,7 @@ const loadUserPresets = (): Preset[] => {
 const initialState: PresetsState = {
   prebuiltPresets,
   userPresets: loadUserPresets(),
+  activePresetId: null,
 };
 
 export const presetsSlice = createSlice({
@@ -47,9 +49,12 @@ export const presetsSlice = createSlice({
       const existingIds = new Set(state.userPresets.map(p => p.id));
       const newPresets = action.payload.filter(p => !existingIds.has(p.id));
       state.userPresets.push(...newPresets);
-    }
+    },
+    setActivePresetId: (state, action: PayloadAction<string | null>) => {
+      state.activePresetId = action.payload;
+    },
   }
 });
 
-export const { addPreset, deletePreset, importPresets } = presetsSlice.actions;
+export const { addPreset, deletePreset, importPresets, setActivePresetId } = presetsSlice.actions;
 export default presetsSlice.reducer;

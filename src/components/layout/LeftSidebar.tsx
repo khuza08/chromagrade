@@ -3,7 +3,9 @@ import { Layers, Image, History, Bookmark } from 'lucide-react';
 import { useSelector, useDispatch } from 'react-redux';
 import type { RootState } from '../../store/store';
 import EmptyStateOverlay from '../ui/EmptyStateOverlay';
-import { applyPartialSnapshot } from '../../store/slices/gradingSlice';
+import { applyPartialSnapshot, resetGrading } from '../../store/slices/gradingSlice';
+import { resetBasic } from '../../store/slices/basicSlice';
+import { setActivePresetId } from '../../store/slices/presetsSlice';
 import { CanvasEngine, canvasEngine } from '../../lib/CanvasEngine';
 import type { GradingState } from '../../store/slices/gradingSlice';
 import { setActiveLut, setLutSize } from '../../store/slices/lutSlice';
@@ -44,6 +46,7 @@ const LeftSidebar: React.FC = () => {
   const hasImage = useSelector((state: RootState) => Boolean(state.image.originalUrl), (a, b) => a === b);
   const prebuiltPresets = useSelector((state: RootState) => state.presets.prebuiltPresets);
   const userPresets = useSelector((state: RootState) => state.presets.userPresets);
+  const activePresetId = useSelector((state: RootState) => state.presets.activePresetId);
   const originalUrl = useSelector((state: RootState) => state.image.originalUrl);
   const activeLut = useSelector((state: RootState) => state.lut.activeLut);
 
@@ -127,8 +130,17 @@ const LeftSidebar: React.FC = () => {
             {allPresets.map((preset) => (
               <div
                 key={preset.id}
-                onClick={() => dispatch(applyPartialSnapshot(preset.parameters))}
-                className="aspect-video bg-[var(--bg-control)] rounded border border-[var(--border)] hover:border-[var(--theme-primary)] cursor-pointer overflow-hidden relative group"
+                onClick={() => {
+                  if (activePresetId === preset.id) {
+                    dispatch(resetGrading());
+                    dispatch(resetBasic());
+                    dispatch(setActivePresetId(null));
+                    return;
+                  }
+                  dispatch(applyPartialSnapshot(preset.parameters));
+                  dispatch(setActivePresetId(preset.id));
+                }}
+                className={`aspect-video bg-[var(--bg-control)] rounded border cursor-pointer overflow-hidden relative group transition-all ${activePresetId === preset.id ? 'border-[var(--theme-primary)] ring-2 ring-[var(--theme-primary)]' : 'border-[var(--border)] hover:border-[var(--theme-primary)]'}`}
                 style={previews[preset.id] ? {
                   backgroundImage: `url(${previews[preset.id]})`,
                   backgroundSize: 'cover',
