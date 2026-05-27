@@ -16,6 +16,8 @@ const loadLayout = () => {
 const savedLayout = loadLayout();
 
 interface UIState {
+  leftCollapsed: boolean;       // 👈 1. Added property
+  collapsedIconIndex: number;   // 👈 2. Added property
   zoom: number;
   showBeforeAfter: boolean;
   isExportModalOpen: boolean;
@@ -33,6 +35,8 @@ interface UIState {
 }
 
 const initialState: UIState = {
+  leftCollapsed: false,
+  collapsedIconIndex: 3,
   zoom: 1,
   showBeforeAfter: false,
   isExportModalOpen: false,
@@ -89,6 +93,11 @@ export const uiSlice = createSlice({
     },
     toggleLeftSidebar: (state) => {
       state.leftSidebarCollapsed = !state.leftSidebarCollapsed;
+      state.leftCollapsed = state.leftSidebarCollapsed;
+
+      if (state.leftCollapsed) {
+        state.collapsedIconIndex = Math.floor(Math.random() * (7 - 3 + 1)) + 3;
+      }
     },
     resetViewport: (state) => {
       state.viewportResetToken += 1;

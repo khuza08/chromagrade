@@ -1,5 +1,5 @@
 import React, { useRef } from 'react';
-import { Undo2, Redo2, RotateCcw, Download, PanelLeftOpen, PanelLeftClose, Wand2, Save, FolderOpen, X } from 'lucide-react';
+import { Undo2, Redo2, RotateCcw, Download, PanelLeftClose, Wand2, Save, FolderOpen, X } from 'lucide-react';
 import { useDispatch, useSelector } from 'react-redux';
 import type { RootState } from '../../store/store';
 import { undo, redo, resetHistory } from '../../store/slices/historySlice';
@@ -22,7 +22,6 @@ const TopBar: React.FC = () => {
   const originalUrl = useSelector((state: RootState) => state.image.originalUrl);
   const fileName = useSelector((state: RootState) => state.image.fileName);
   const workspaceInputRef = useRef<HTMLInputElement>(null);
-  const leftCollapsed = useSelector((state: RootState) => state.ui.leftSidebarCollapsed);
 
   const currentLut = useSelector((state: RootState) => state.lut);
   const currentPresets = useSelector((state: RootState) => state.presets);
@@ -89,15 +88,38 @@ const TopBar: React.FC = () => {
     }
   };
 
+  const leftCollapsed = useSelector((state: RootState) => state.ui?.leftCollapsed);
+  const collapsedIconIndex = useSelector((state: RootState) => state.ui?.collapsedIconIndex || 3);
+
   return (
     <div className="h-12 bg-[var(--bg-panel)] border-b border-[var(--border)] flex items-center justify-between px-4 z-50">
       <div className="flex items-center gap-4">
-        <button onClick={() => dispatch(toggleLeftSidebar())} disabled={!hasImage} className="p-1 hover:bg-[var(--bg-hover)] rounded text-[var(--text-secondary)] disabled:opacity-30 disabled:cursor-not-allowed">
-          {leftCollapsed ? <PanelLeftOpen size={20} /> : <PanelLeftClose size={20} />}
+        <button
+          onClick={() => dispatch(toggleLeftSidebar())}
+          disabled={!hasImage}
+          className="p-1 hover:bg-[var(--bg-hover)] rounded text-[var(--text-secondary)] disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {!hasImage ? (
+            <img src="/favicon2.png" alt="Disabled Icon" className="w-5 h-5 object-contain" />
+          ) : leftCollapsed ? (
+
+            <img
+              src={`/favicon${collapsedIconIndex}.png`}
+              alt="Collapsed Icon"
+              className="w-5 h-5 object-contain"
+            />
+          ) : (
+            <PanelLeftClose size={20} />
+          )}
         </button>
-        <h1 className="text-sm font-bold tracking-tight">
-          ChromaGrade
-        </h1>
+
+        <div className="w-28 flex items-center">
+          {hasImage && !leftCollapsed && (
+            <h1 className="text-sm font-bold tracking-tight">
+              ChromaGrade
+            </h1>
+          )}
+        </div>
       </div>
 
       <div className="flex items-center gap-2">
