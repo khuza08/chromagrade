@@ -12,7 +12,7 @@ export interface Preset {
   basicParameters?: Partial<BasicState>;
 }
 
-interface PresetsState {
+export interface PresetsState {
   prebuiltPresets: Preset[];
   userPresets: Preset[];
   activePresetId: string | null;
@@ -53,8 +53,12 @@ export const presetsSlice = createSlice({
     setActivePresetId: (state, action: PayloadAction<string | null>) => {
       state.activePresetId = action.payload;
     },
+    applyPresetsSnapshot: (state, action: PayloadAction<PresetsState>) => {
+      state.activePresetId = action.payload.activePresetId;
+      // Keep existing userPresets and prebuiltPresets unchanged
+    },
   }
 });
 
-export const { addPreset, deletePreset, importPresets, setActivePresetId } = presetsSlice.actions;
+export const { addPreset, deletePreset, importPresets, setActivePresetId, applyPresetsSnapshot } = presetsSlice.actions;
 export default presetsSlice.reducer;

@@ -19,6 +19,8 @@ import { extractPalette } from "../../utils/vibrant";
 import { useTheme } from "../../context/ThemeContext";
 import { extractPreview } from "../../lib/rawLoader";
 
+import { parseCube } from "../../lib/lut/parseCube";
+
 const CanvasViewer: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -80,6 +82,34 @@ const CanvasViewer: React.FC = () => {
   useEffect(() => {
     canvasEngine.updateHslTextures(gradingParams.hsl);
   }, [gradingParams.hsl]);
+
+  // Sync activeLut with canvasEngine
+  useEffect(() => {
+    if (!lut.activeLut) {
+      canvasEngine.clearLut();
+      return;
+    }
+
+    let isSubscribed = true;
+    async function loadLutAsync() {
+      try {
+        const res = await fetch(`/luts/${lut.activeLut}.cube`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const text = await res.text();
+        const { size, data } = parseCube(text);
+        if (isSubscribed) {
+          canvasEngine.loadLut(data, size);
+        }
+      } catch (e) {
+        console.error("Failed to load active LUT in CanvasViewer:", e);
+      }
+    }
+    loadLutAsync();
+
+    return () => {
+      isSubscribed = false;
+    };
+  }, [lut.activeLut]);
 
   // Redraw when grading params or basic sliders change
   useEffect(() => {

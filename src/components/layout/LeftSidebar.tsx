@@ -7,6 +7,8 @@ import { applyPartialSnapshot, resetGrading } from '../../store/slices/gradingSl
 import { resetBasic } from '../../store/slices/basicSlice';
 import { setActivePresetId } from '../../store/slices/presetsSlice';
 import { CanvasEngine, canvasEngine } from '../../lib/CanvasEngine';
+import { pushSnapshot } from '../../store/slices/historySlice';
+import { captureSnapshot } from '../../utils/historyUtils';
 import type { GradingState } from '../../store/slices/gradingSlice';
 import { setActiveLut, setLutSize } from '../../store/slices/lutSlice';
 import { parseCube, LutParseError } from '../../lib/lut/parseCube';
@@ -55,6 +57,8 @@ const LeftSidebar: React.FC = () => {
       const res = await fetch(`/luts/${name}.cube`);
       if (!res.ok) throw new Error();
       const { size, data } = parseCube(await res.text());
+      dispatch(pushSnapshot(captureSnapshot()));
+      dispatch(setActivePresetId(null));
       canvasEngine.loadLut(data, size);
       dispatch(setActiveLut(name));
       dispatch(setLutSize(size));
@@ -131,12 +135,15 @@ const LeftSidebar: React.FC = () => {
               <div
                 key={preset.id}
                 onClick={() => {
+                  dispatch(pushSnapshot(captureSnapshot()));
                   if (activePresetId === preset.id) {
                     dispatch(resetGrading());
                     dispatch(resetBasic());
                     dispatch(setActivePresetId(null));
                     return;
                   }
+                  dispatch(setActiveLut(null));
+                  canvasEngine.clearLut();
                   dispatch(applyPartialSnapshot(preset.parameters));
                   dispatch(setActivePresetId(preset.id));
                 }}

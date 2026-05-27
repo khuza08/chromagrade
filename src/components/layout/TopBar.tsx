@@ -8,7 +8,8 @@ import { applyBasicSnapshot, resetBasic } from '../../store/slices/basicSlice';
 import { setExportModalOpen, toggleLeftSidebar, resetViewport } from '../../store/slices/uiSlice';
 import { openModal } from '../../store/slices/colorTransferSlice';
 import { setImage, clearImage } from '../../store/slices/imageSlice';
-import { setActiveLut } from '../../store/slices/lutSlice';
+import { setActiveLut, applyLutSnapshot } from '../../store/slices/lutSlice';
+import { applyPresetsSnapshot, setActivePresetId } from '../../store/slices/presetsSlice';
 import { canvasEngine } from '../../lib/CanvasEngine';
 import { saveWorkspace, loadWorkspace, workspaceToObjectUrl } from '../../utils/workspaceIO';
 
@@ -23,19 +24,40 @@ const TopBar: React.FC = () => {
   const workspaceInputRef = useRef<HTMLInputElement>(null);
   const leftCollapsed = useSelector((state: RootState) => state.ui.leftSidebarCollapsed);
 
+  const currentLut = useSelector((state: RootState) => state.lut);
+  const currentPresets = useSelector((state: RootState) => state.presets);
+
   const handleUndo = () => {
     if (past.length > 0) {
       const prev = past[past.length - 1];
-      dispatch(undo(currentGrading));
-      dispatch(applySnapshot(prev));
+      const currentState = {
+        grading: currentGrading,
+        basic: currentBasic,
+        lut: currentLut,
+        presets: currentPresets,
+      };
+      dispatch(undo(currentState));
+      dispatch(applySnapshot(prev.grading));
+      dispatch(applyBasicSnapshot(prev.basic));
+      dispatch(applyLutSnapshot(prev.lut));
+      dispatch(applyPresetsSnapshot(prev.presets));
     }
   };
 
   const handleRedo = () => {
     if (future.length > 0) {
       const next = future[0];
-      dispatch(redo(currentGrading));
-      dispatch(applySnapshot(next));
+      const currentState = {
+        grading: currentGrading,
+        basic: currentBasic,
+        lut: currentLut,
+        presets: currentPresets,
+      };
+      dispatch(redo(currentState));
+      dispatch(applySnapshot(next.grading));
+      dispatch(applyBasicSnapshot(next.basic));
+      dispatch(applyLutSnapshot(next.lut));
+      dispatch(applyPresetsSnapshot(next.presets));
     }
   };
 
@@ -131,7 +153,14 @@ const TopBar: React.FC = () => {
           Match Color
         </button>
         <button
-          onClick={() => { dispatch(resetGrading()); dispatch(resetBasic()); dispatch(resetHistory()); canvasEngine.clearLut(); dispatch(setActiveLut(null)); }}
+          onClick={() => {
+            dispatch(resetGrading());
+            dispatch(resetBasic());
+            dispatch(setActiveLut(null));
+            dispatch(setActivePresetId(null));
+            canvasEngine.clearLut();
+            dispatch(resetHistory());
+          }}
           disabled={!hasImage}
           className="flex items-center gap-1.5 px-3 py-1 hover:bg-[var(--bg-hover)] rounded text-xs font-medium text-[var(--text-secondary)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
         >
@@ -146,8 +175,9 @@ const TopBar: React.FC = () => {
             dispatch(clearImage());
             dispatch(resetGrading());
             dispatch(resetBasic());
-            dispatch(resetHistory());
             dispatch(setActiveLut(null));
+            dispatch(setActivePresetId(null));
+            dispatch(resetHistory());
           }}
           disabled={!hasImage}
           className="flex items-center gap-1.5 px-3 py-1 hover:bg-[var(--bg-hover)] rounded text-xs font-medium text-[var(--accent-red,#f87171)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"

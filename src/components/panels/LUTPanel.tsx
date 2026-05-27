@@ -5,6 +5,9 @@ import {
   setLutStrength,
   setLutSize,
 } from "../../store/slices/lutSlice";
+import { pushSnapshot } from "../../store/slices/historySlice";
+import { captureSnapshot } from "../../utils/historyUtils";
+import { setActivePresetId } from "../../store/slices/presetsSlice";
 import { parseCube, LutParseError } from "../../lib/lut/parseCube";
 import { LUT_STRENGTH_MIN, LUT_STRENGTH_MAX } from "../../lib/lut/lutConstants";
 import { canvasEngine } from "../../lib/CanvasEngine";
@@ -39,6 +42,8 @@ export default function LUTPanel() {
   async function applyLut(name: string, text: string) {
     try {
       const { size, data } = parseCube(text);
+      dispatch(pushSnapshot(captureSnapshot()));
+      dispatch(setActivePresetId(null));
       canvasEngine.loadLut(data, size);
       dispatch(setActiveLut(name));
       dispatch(setLutSize(size));
@@ -62,6 +67,8 @@ export default function LUTPanel() {
   }
 
   function handleClear() {
+    dispatch(pushSnapshot(captureSnapshot()));
+    dispatch(setActivePresetId(null));
     canvasEngine.clearLut();
     dispatch(setActiveLut(null));
     setError(null);

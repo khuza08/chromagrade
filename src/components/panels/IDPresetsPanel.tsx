@@ -11,6 +11,10 @@ import type { Preset } from "../../store/slices/presetsSlice";
 import { applyPartialSnapshot, resetGrading } from "../../store/slices/gradingSlice";
 import { applyBasicSnapshot, resetBasic } from "../../store/slices/basicSlice";
 import type { GradingState } from "../../store/slices/gradingSlice";
+import { pushSnapshot } from "../../store/slices/historySlice";
+import { captureSnapshot } from "../../utils/historyUtils";
+import { setActiveLut } from "../../store/slices/lutSlice";
+import { canvasEngine } from "../../lib/CanvasEngine";
 import PresetCard from "../ui/PresetCard";
 import {
   exportPresets,
@@ -124,6 +128,7 @@ const IDPresetsPanel: React.FC = () => {
         return next;
       });
     } else {
+      dispatch(pushSnapshot(captureSnapshot()));
       // Toggle off if already active — reset to neutral
       if (activePresetId === preset.id) {
         dispatch(resetGrading());
@@ -131,6 +136,8 @@ const IDPresetsPanel: React.FC = () => {
         dispatch(setActivePresetId(null));
         return;
       }
+      dispatch(setActiveLut(null));
+      canvasEngine.clearLut();
       dispatch(applyPartialSnapshot(preset.parameters));
       if (preset.basicParameters)
         dispatch(applyBasicSnapshot(preset.basicParameters as any));
