@@ -5,7 +5,6 @@ import {
   Sliders,
   Pipette,
   Palette,
-  Sparkles,
   Map,
   SlidersHorizontal,
 } from "lucide-react";
@@ -20,12 +19,6 @@ import HSLPanel from "../panels/HSLPanel";
 import IDPresetsPanel from "../panels/IDPresetsPanel";
 import BasicPanel from "../panels/BasicPanel";
 import LUTPanel from "../panels/LUTPanel";
-
-const ComingSoon = () => (
-  <div className="p-4 text-sm text-[var(--text-secondary)] italic">
-    Coming soon...
-  </div>
-);
 
 const RightSidebar: React.FC = () => {
   const width = "var(--right-sidebar-width)";
