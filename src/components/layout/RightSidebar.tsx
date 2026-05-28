@@ -62,9 +62,7 @@ const RightSidebar: React.FC = () => {
         <AccordionSection title="LUT" icon={Palette}>
           <LUTPanel />
         </AccordionSection>
-        <AccordionSection title="AI Grade" icon={Sparkles}>
-          <ComingSoon />
-        </AccordionSection>
+
         <AccordionSection title="Presets" icon={Map}>
           <IDPresetsPanel />
         </AccordionSection>
