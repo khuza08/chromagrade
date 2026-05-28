@@ -100,11 +100,11 @@ const TopBar: React.FC = () => {
           className="p-1 hover:bg-[var(--bg-hover)] rounded text-[var(--text-secondary)] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {!hasImage ? (
-            <img src="/favicon2.png" alt="Disabled Icon" className="w-5 h-5 object-contain" />
+            <img src="/favicon2.avif" alt="Disabled Icon" className="w-5 h-5 object-contain" />
           ) : leftCollapsed ? (
 
             <img
-              src={`/favicon${collapsedIconIndex}.png`}
+              src={`/favicon${collapsedIconIndex}.avif`}
               alt="Collapsed Icon"
               className="w-5 h-5 object-contain"
             />

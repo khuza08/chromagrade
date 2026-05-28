@@ -16,8 +16,8 @@ const loadLayout = () => {
 const savedLayout = loadLayout();
 
 interface UIState {
-  leftCollapsed: boolean;       // 👈 1. Added property
-  collapsedIconIndex: number;   // 👈 2. Added property
+  leftCollapsed: boolean;
+  collapsedIconIndex: number;
   zoom: number;
   showBeforeAfter: boolean;
   isExportModalOpen: boolean;
