@@ -72,7 +72,7 @@ const ExportModal: React.FC = () => {
                     {f.toUpperCase()}
                   </span>
                   <span className="text-[10px] uppercase font-bold tracking-tighter opacity-40">
-                    {f === 'jpg' ? 'High Quality' : f === 'png' ? 'Lossless' : 'Animated'}
+                    {f === 'jpg' ? 'High Quality' : f === 'png' ? 'Lossless' : 'Smaller'}
                   </span>
                 </label>
               ))}
