@@ -21,6 +21,5 @@ export function captureSnapshot(): HistorySnapshot {
     grading: state.grading,
     basic: state.basic,
     lut: state.lut,
-    presets: state.presets,
   };
 }

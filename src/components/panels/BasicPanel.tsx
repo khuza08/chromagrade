@@ -36,6 +36,14 @@ import {
 import { canvasEngine } from "../../lib/CanvasEngine";
 import { computeAutoWB } from "../../lib/autoWB";
 
+const SectionHeader: React.FC<{ children: React.ReactNode }> = React.memo(({
+  children,
+}) => (
+  <h3 className="text-[9px] uppercase tracking-widest text-[var(--text-secondary)] font-bold mb-2 mt-4 px-3">
+    {children}
+  </h3>
+));
+
 const BasicPanel: React.FC = () => {
   const dispatch = useDispatch();
   const basic = useSelector((state: RootState) => state.basic);
@@ -75,14 +83,6 @@ const BasicPanel: React.FC = () => {
       dispatch(setWbPreset("auto"));
     }
   };
-
-  const SectionHeader: React.FC<{ children: React.ReactNode }> = ({
-    children,
-  }) => (
-    <h3 className="text-[9px] uppercase tracking-widest text-[var(--text-secondary)] font-bold mb-2 mt-4 px-3">
-      {children}
-    </h3>
-  );
 
   return (
     <div className="flex flex-col pb-4">

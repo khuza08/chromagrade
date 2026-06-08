@@ -3,14 +3,12 @@ import type { PayloadAction } from '@reduxjs/toolkit';
 import type { GradingState } from './gradingSlice';
 import type { BasicState } from './basicSlice';
 import type { LutState } from './lutSlice';
-import type { PresetsState } from './presetsSlice';
 
 // Combined snapshot capturing all relevant slices for undo/redo
 export interface HistorySnapshot {
   grading: GradingState;
   basic: BasicState;
   lut: LutState;
-  presets: PresetsState;
 }
 
 interface HistoryState {

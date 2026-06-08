@@ -44,7 +44,6 @@ export const historyMiddleware: Middleware = store => next => action => {
         grading: state.grading,
         basic: state.basic,
         lut: state.lut,
-        presets: state.presets,
       };
 
       store.dispatch(pushSnapshot(snapshot));

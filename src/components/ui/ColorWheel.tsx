@@ -210,4 +210,4 @@ const ColorWheel: React.FC<ColorWheelProps> = ({ label, value, onChange, onReset
   );
 };
 
-export default ColorWheel;
+export default React.memo(ColorWheel);

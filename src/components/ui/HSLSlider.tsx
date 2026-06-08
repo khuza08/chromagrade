@@ -61,4 +61,4 @@ const HSLSlider: React.FC<HSLSliderProps> = ({ channel, type, label, hueDeg, sin
   );
 };
 
-export default HSLSlider;
+export default React.memo(HSLSlider);

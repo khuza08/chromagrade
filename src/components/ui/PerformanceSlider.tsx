@@ -13,16 +13,21 @@ interface PerformanceSliderProps {
   showTicks?: boolean;
 }
 
+const SLIDER_RAF_DEBOUNCE = 'rAF';
+
 const PerformanceSlider: React.FC<PerformanceSliderProps> = ({ 
   label, min, max, step = 1, value, onChange, onReset, trackGradient, showTicks
 }) => {
   const [localValue, setLocalValue] = useState(value);
   const isDragging = useRef(false);
+  const rafId = useRef<number | null>(null);
+  const pendingValue = useRef(value);
 
   // Sync with Redux when it changes from outside (e.g. Undo/Redo)
   useEffect(() => {
     if (!isDragging.current) {
       setLocalValue(value);
+      pendingValue.current = value;
     }
   }, [value]);
 
@@ -30,11 +35,23 @@ const PerformanceSlider: React.FC<PerformanceSliderProps> = ({
     const newVal = parseFloat(e.target.value);
     setLocalValue(newVal);
     isDragging.current = true;
-    onChange(newVal);
+    pendingValue.current = newVal;
+
+    if (rafId.current === null) {
+      rafId.current = requestAnimationFrame(() => {
+        onChange(pendingValue.current);
+        rafId.current = null;
+      });
+    }
   };
 
   const handleRelease = () => {
     isDragging.current = false;
+    if (rafId.current !== null) {
+      cancelAnimationFrame(rafId.current);
+      rafId.current = null;
+    }
+    onChange(localValue);
   };
 
   const displayValue = step < 1 
@@ -87,4 +104,4 @@ const PerformanceSlider: React.FC<PerformanceSliderProps> = ({
   );
 };
 
-export default PerformanceSlider;
+export default React.memo(PerformanceSlider);

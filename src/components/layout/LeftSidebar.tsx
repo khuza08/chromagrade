@@ -69,6 +69,7 @@ const LeftSidebar: React.FC = () => {
   const allPresets = [...userPresets, ...prebuiltPresets];
 
   const [previews, setPreviews] = useState<Record<string, string>>({});
+  const [isGenerating, setIsGenerating] = useState(false);
   const engineRef = useRef<CanvasEngine | null>(null);
   const offscreenCanvas = useRef<HTMLCanvasElement | null>(null);
 
@@ -93,7 +94,8 @@ const LeftSidebar: React.FC = () => {
     const engine = engineRef.current;
     const canvas = offscreenCanvas.current;
 
-    engine.loadImage(originalUrl).then(() => {
+    engine.loadImage(originalUrl).then(async () => {
+      setIsGenerating(true);
       const newPreviews: Record<string, string> = {};
 
       for (const preset of allPresets) {
@@ -102,9 +104,11 @@ const LeftSidebar: React.FC = () => {
         engine.updateHslTextures(params.hsl);
         engine.render(params);
         newPreviews[preset.id] = canvas.toDataURL('image/jpeg', 0.7);
+        await new Promise(r => setTimeout(r, 0)); // yield to main thread
       }
 
       setPreviews(newPreviews);
+      setIsGenerating(false);
     });
 
     return () => {
@@ -130,7 +134,7 @@ const LeftSidebar: React.FC = () => {
               Presets
             </h2>
           </div>
-          <div className="grid grid-cols-1 gap-2">
+          <div className={`grid grid-cols-1 gap-2 transition-opacity duration-300 ${isGenerating ? 'opacity-50' : 'opacity-100'}`}>
             {allPresets.map((preset) => (
               <div
                 key={preset.id}

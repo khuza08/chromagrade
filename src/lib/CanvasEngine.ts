@@ -35,7 +35,11 @@ export class CanvasEngine {
 
   private _uniforms: Record<string, WebGLUniformLocation> = {};
   private _needsRender: boolean = false;
-  private _lastParams: string = "";
+  private _renderVersion: number = 0;
+  private _lastRenderVersion: number = -1;
+  private _lastParamsObj: any = null;
+  private _lastExposure: number = -1;
+  private _lastBasicStateObj: any = null;
   private _lutTexture: WebGLTexture | null = null;
   private _lutData: Float32Array | null = null;
   private _lutSize: number = 33;
@@ -386,6 +390,7 @@ export class CanvasEngine {
         }
 
         this._needsRender = true;
+        this._renderVersion++;
         resolve({ width: img.width, height: img.height });
       };
       img.onerror = reject;
@@ -442,8 +447,9 @@ export class CanvasEngine {
     }
     this._originalImage = null;
     this._histogramProxyImageData = null;
-    this._lastParams = "";
+    this._lastParamsObj = null;
     this._needsRender = false;
+    this._renderVersion++;
     if (this.gl && this.targetCanvas) {
       this.gl.clear(this.gl.COLOR_BUFFER_BIT);
     }
@@ -456,36 +462,20 @@ export class CanvasEngine {
     if (!this.gl || !this.program || !this._proxyTexture) return;
 
     const basicState = (store.getState() as any).basic ?? {};
-    const serialized = JSON.stringify({
-      params,
-      exposure,
-      toneHighlights: basicState.toneHighlights,
-      toneShadows: basicState.toneShadows,
-      whites: basicState.whites,
-      blacks: basicState.blacks,
-      texture: basicState.texture,
-      clarity: basicState.clarity,
-      dehaze: basicState.dehaze,
-      hdr: basicState.hdr,
-      hdrLimit: basicState.hdrLimit,
-      hdrGamma: basicState.hdrGamma,
-      hdrIntensity: basicState.hdrIntensity,
-      hdrLightAdapt: basicState.hdrLightAdapt,
-      hdrColorAdapt: basicState.hdrColorAdapt,
-      visualizeHdr: basicState.visualizeHdr,
-      sdrPreview: basicState.sdrPreview,
-      sdrBrightness: basicState.sdrBrightness,
-      sdrContrast: basicState.sdrContrast,
-      sdrHighlights: basicState.sdrHighlights,
-      sdrShadows: basicState.sdrShadows,
-      sdrWhites: basicState.sdrWhites,
-      sdrHighlightSat: basicState.sdrHighlightSat,
-      lutActiveLut: (store.getState() as any).lut?.activeLut,
-      lutStrength: (store.getState() as any).lut?.strength,
-    });
-    if (serialized === this._lastParams && !this._needsRender) return;
 
-    this._lastParams = serialized;
+    if (
+      this._renderVersion === this._lastRenderVersion && 
+      !this._needsRender &&
+      this._lastParamsObj === params &&
+      this._lastExposure === exposure &&
+      this._lastBasicStateObj === basicState
+    ) {
+      return;
+    }
+    this._lastRenderVersion = this._renderVersion;
+    this._lastParamsObj = params;
+    this._lastExposure = exposure;
+    this._lastBasicStateObj = basicState;
     this._needsRender = false;
 
     const gl = this.gl;
@@ -660,6 +650,7 @@ export class CanvasEngine {
     this._lutData = data;
     this._lutSize = size;
     this._needsRender = true;
+    this._renderVersion++;
   }
 
   public clearLut(): void {
@@ -669,6 +660,7 @@ export class CanvasEngine {
     this._lutData = null;
     this._lutSize = 33;
     this._needsRender = true;
+    this._renderVersion++;
   }
 
   public updateCurveTextures(curves: CurvesState) {
@@ -756,6 +748,7 @@ export class CanvasEngine {
     // We just flag a render if needed.
     if (this.gl && this.targetCanvas) {
       this._needsRender = true;
+      this._renderVersion++;
     }
   }
 

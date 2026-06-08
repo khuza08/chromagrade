@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { shallowEqual, useDispatch, useSelector } from "react-redux";
 import { store } from "../../store/store";
 import type { RootState } from "../../store/store";
 import { setImage } from "../../store/slices/imageSlice";
@@ -36,8 +36,8 @@ const CanvasViewer: React.FC = () => {
   const viewportResetToken = useSelector(
     (state: RootState) => state.ui.viewportResetToken,
   );
-  const { curves } = useSelector((state: RootState) => state.grading);
-  const gradingParams = useSelector((state: RootState) => state.grading);
+  const gradingParams = useSelector((state: RootState) => state.grading, shallowEqual);
+  const curves = gradingParams.curves;
   const basic = useSelector((state: RootState) => state.basic);
   const lut = useSelector((state: RootState) => state.lut);
   const [zoom, setZoom] = useState(1.0);

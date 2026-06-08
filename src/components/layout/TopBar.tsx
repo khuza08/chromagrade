@@ -9,7 +9,7 @@ import { setExportModalOpen, toggleLeftSidebar, resetViewport } from '../../stor
 import { openModal } from '../../store/slices/colorTransferSlice';
 import { setImage, clearImage } from '../../store/slices/imageSlice';
 import { setActiveLut, applyLutSnapshot } from '../../store/slices/lutSlice';
-import { applyPresetsSnapshot, setActivePresetId } from '../../store/slices/presetsSlice';
+import { setActivePresetId } from '../../store/slices/presetsSlice';
 import { canvasEngine } from '../../lib/CanvasEngine';
 import { saveWorkspace, loadWorkspace, workspaceToObjectUrl } from '../../utils/workspaceIO';
 
@@ -33,13 +33,11 @@ const TopBar: React.FC = () => {
         grading: currentGrading,
         basic: currentBasic,
         lut: currentLut,
-        presets: currentPresets,
       };
       dispatch(undo(currentState));
       dispatch(applySnapshot(prev.grading));
       dispatch(applyBasicSnapshot(prev.basic));
       dispatch(applyLutSnapshot(prev.lut));
-      dispatch(applyPresetsSnapshot(prev.presets));
     }
   };
 
@@ -50,13 +48,11 @@ const TopBar: React.FC = () => {
         grading: currentGrading,
         basic: currentBasic,
         lut: currentLut,
-        presets: currentPresets,
       };
       dispatch(redo(currentState));
       dispatch(applySnapshot(next.grading));
       dispatch(applyBasicSnapshot(next.basic));
       dispatch(applyLutSnapshot(next.lut));
-      dispatch(applyPresetsSnapshot(next.presets));
     }
   };
 
