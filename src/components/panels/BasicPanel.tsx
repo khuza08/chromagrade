@@ -61,20 +61,6 @@ const BasicPanel: React.FC = () => {
       const proxy = canvasEngine.getProxyImageData();
       if (!proxy) return;
 
-      // TEMP DEBUG — remove after diagnosis
-      const data = proxy.data;
-      let sumR = 0,
-        sumG = 0,
-        sumB = 0;
-      for (let i = 0; i < data.length; i += 4) {
-        sumR += data[i];
-        sumG += data[i + 1];
-        sumB += data[i + 2];
-      }
-      const pc = data.length / 4;
-      console.log("PROXY SIZE", proxy.width, proxy.height);
-      console.log("RAW AVG RGB", { r: sumR / pc, g: sumG / pc, b: sumB / pc });
-
       const result = computeAutoWB(proxy);
       console.log("AUTO WB RESULT", result);
 

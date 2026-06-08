@@ -88,11 +88,11 @@ const TopBar: React.FC = () => {
         } catch (e) {
           console.warn('Failed to load workspace LUT:', workspace.lutState.activeLut);
           canvasEngine.clearLut();
-          dispatch(applyLutSnapshot({ activeLut: null, strength: 100, size: 33 }));
+          dispatch(applyLutSnapshot({ activeLut: null, strength: 100, lutSize: 33 }));
         }
       } else {
         canvasEngine.clearLut();
-        dispatch(applyLutSnapshot({ activeLut: null, strength: 100, size: 33 }));
+        dispatch(applyLutSnapshot({ activeLut: null, strength: 100, lutSize: 33 }));
       }
 
       dispatch(resetHistory());
@@ -197,6 +197,7 @@ const TopBar: React.FC = () => {
             dispatch(setActivePresetId(null));
             canvasEngine.clearLut();
             dispatch(resetHistory());
+            dispatch(resetViewport());
           }}
           disabled={!hasImage}
           className="flex items-center gap-1.5 px-3 py-1 hover:bg-[var(--bg-hover)] rounded text-xs font-medium text-[var(--text-secondary)] transition-colors disabled:opacity-30 disabled:cursor-not-allowed"

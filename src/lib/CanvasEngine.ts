@@ -52,6 +52,31 @@ export class CanvasEngine {
   private positionBuffer: WebGLBuffer | null = null;
   private texCoordBuffer: WebGLBuffer | null = null;
 
+  public destroy(): void {
+    if (this.gl) {
+      const ext = this.gl.getExtension("WEBGL_lose_context");
+      if (ext) ext.loseContext();
+    }
+    this.gl = null;
+    this.program = null;
+    this.targetCanvas = null;
+    this._originalImage = null;
+    this._proxyTexture = null;
+    this._histogramProxyImageData = null;
+    if (this._histogramWorker) {
+      this._histogramWorker.terminate();
+      this._histogramWorker = null;
+    }
+    this._curveTextures = {};
+    this._hslTextures = {};
+    this._uniforms = {};
+    this._lutTexture = null;
+    this._lutData = null;
+    this._dummyLutTexture = null;
+    this.positionBuffer = null;
+    this.texCoordBuffer = null;
+  }
+
   public init(canvas: HTMLCanvasElement) {
     this.targetCanvas = canvas;
     this.gl = canvas.getContext("webgl2", {

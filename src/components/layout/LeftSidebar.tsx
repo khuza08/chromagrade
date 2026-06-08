@@ -95,6 +95,7 @@ const LeftSidebar: React.FC = () => {
     const canvas = offscreenCanvas.current;
 
     engine.loadImage(originalUrl).then(async () => {
+      if (!engineRef.current) return; // destroyed during async load
       setIsGenerating(true);
       const newPreviews: Record<string, string> = {};
 
@@ -109,12 +110,16 @@ const LeftSidebar: React.FC = () => {
 
       setPreviews(newPreviews);
       setIsGenerating(false);
+    }).catch(() => {
+      // Engine was destroyed before load completed (Strict Mode / unmount) — ignore
     });
 
     return () => {
       if (engineRef.current) {
+        engineRef.current.destroy();
         engineRef.current = null;
       }
+      offscreenCanvas.current = null;
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [originalUrl, allPresets.length]);
