@@ -25,7 +25,6 @@ const TopBar: React.FC = () => {
   const workspaceInputRef = useRef<HTMLInputElement>(null);
 
   const currentLut = useSelector((state: RootState) => state.lut);
-  const currentPresets = useSelector((state: RootState) => state.presets);
 
   const handleUndo = () => {
     if (past.length > 0) {

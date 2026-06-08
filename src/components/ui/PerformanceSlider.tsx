@@ -13,7 +13,6 @@ interface PerformanceSliderProps {
   showTicks?: boolean;
 }
 
-const SLIDER_RAF_DEBOUNCE = 'rAF';
 
 const PerformanceSlider: React.FC<PerformanceSliderProps> = ({ 
   label, min, max, step = 1, value, onChange, onReset, trackGradient, showTicks
