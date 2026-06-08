@@ -12,6 +12,7 @@ import { setActiveLut, applyLutSnapshot } from '../../store/slices/lutSlice';
 import { setActivePresetId } from '../../store/slices/presetsSlice';
 import { canvasEngine } from '../../lib/CanvasEngine';
 import { saveWorkspace, loadWorkspace, workspaceToObjectUrl } from '../../utils/workspaceIO';
+import { parseCube } from '../../lib/lut/parseCube';
 
 const TopBar: React.FC = () => {
   const dispatch = useDispatch();
@@ -59,7 +60,7 @@ const TopBar: React.FC = () => {
   const handleSaveWorkspace = async () => {
     if (!originalUrl || !fileName) return;
     try {
-      await saveWorkspace(originalUrl, fileName, currentGrading, currentBasic);
+      await saveWorkspace(originalUrl, fileName, currentGrading, currentBasic, currentLut);
     } catch (err) {
       console.error('Failed to save workspace:', err);
     }
@@ -76,6 +77,24 @@ const TopBar: React.FC = () => {
       dispatch(setImage({ url, width: dimensions.width, height: dimensions.height, name: workspace.fileName }));
       dispatch(applySnapshot(workspace.gradingState));
       if (workspace.basicState) dispatch(applyBasicSnapshot(workspace.basicState));
+      
+      if (workspace.lutState?.activeLut) {
+        try {
+          const res = await fetch(`/luts/${workspace.lutState.activeLut}.cube`);
+          if (!res.ok) throw new Error();
+          const { size, data } = parseCube(await res.text());
+          canvasEngine.loadLut(data, size);
+          dispatch(applyLutSnapshot(workspace.lutState));
+        } catch (e) {
+          console.warn('Failed to load workspace LUT:', workspace.lutState.activeLut);
+          canvasEngine.clearLut();
+          dispatch(applyLutSnapshot({ activeLut: null, strength: 100, size: 33 }));
+        }
+      } else {
+        canvasEngine.clearLut();
+        dispatch(applyLutSnapshot({ activeLut: null, strength: 100, size: 33 }));
+      }
+
       dispatch(resetHistory());
       dispatch(resetViewport());
       canvasEngine.render(workspace.gradingState);

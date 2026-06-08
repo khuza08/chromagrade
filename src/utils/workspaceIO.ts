@@ -1,5 +1,6 @@
 import type { GradingState } from '../store/slices/gradingSlice';
 import type { BasicState } from '../store/slices/basicSlice';
+import type { LutState } from '../store/slices/lutSlice';
 
 const WORKSPACE_VERSION = 1;
 
@@ -10,13 +11,15 @@ export interface WorkspaceFile {
   imageData: string; // base64
   gradingState: GradingState;
   basicState?: BasicState;
+  lutState?: LutState;
 }
 
 export async function saveWorkspace(
   originalUrl: string,
   fileName: string,
   gradingState: GradingState,
-  basicState?: BasicState
+  basicState?: BasicState,
+  lutState?: LutState
 ): Promise<void> {
   // Fetch the blob from the object URL and convert to base64
   const response = await fetch(originalUrl);
@@ -37,6 +40,7 @@ export async function saveWorkspace(
     imageData: base64,
     gradingState,
     basicState,
+    lutState,
   };
 
   const json = JSON.stringify(workspace);
