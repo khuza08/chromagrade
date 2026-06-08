@@ -208,6 +208,7 @@ const TopBar: React.FC = () => {
         <button
           onClick={() => {
             if (!confirm('Clear the workspace? This will remove the current image and all grading.')) return;
+            if (originalUrl) URL.revokeObjectURL(originalUrl);
             canvasEngine.clearImage();
             canvasEngine.clearLut();
             dispatch(clearImage());

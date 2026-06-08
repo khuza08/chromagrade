@@ -301,6 +301,9 @@ const CanvasViewer: React.FC = () => {
     let url: string;
     let previewWarning: string | null = null;
 
+    // Revoke previous image URL to prevent blob memory leak
+    if (originalUrl) URL.revokeObjectURL(originalUrl);
+
     if (isRaw) {
       const { blob, previewWarning: warning } = await extractPreview(file);
       url = URL.createObjectURL(blob);

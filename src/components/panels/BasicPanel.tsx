@@ -62,7 +62,6 @@ const BasicPanel: React.FC = () => {
       if (!proxy) return;
 
       const result = computeAutoWB(proxy);
-      console.log("AUTO WB RESULT", result);
 
       dispatch(setTemperature(result.temperature));
       dispatch(setTint(result.tint));

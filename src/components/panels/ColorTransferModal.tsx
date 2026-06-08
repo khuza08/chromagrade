@@ -171,6 +171,7 @@ const ColorTransferModal: React.FC = () => {
       }
     };
     img.onerror = () => {
+      URL.revokeObjectURL(url);
       dispatch(setError('Failed to load reference image'));
     };
     img.src = url;
