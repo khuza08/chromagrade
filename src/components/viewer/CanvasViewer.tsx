@@ -13,6 +13,7 @@ import {
   ZoomOut,
   RotateCcw,
   RotateCw,
+  SplitSquareHorizontal,
 } from "lucide-react";
 import TargetOverlay from "./TargetOverlay";
 import { extractPalette } from "../../utils/vibrant";
@@ -45,7 +46,14 @@ const CanvasViewer: React.FC = () => {
   const [rotation, setRotation] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [compareMode, setCompareMode] = useState(false);
+  const [comparePos, setComparePos] = useState(0.5);
   const dragStart = useRef({ x: 0, y: 0 });
+
+  useEffect(() => {
+    setCompareMode(false);
+    setComparePos(0.5);
+  }, [originalUrl]);
   const isGLInitialized = useRef(false);
 
   // Initialize WebGL ONCE on component mount — canvas is always in the DOM
@@ -392,18 +400,16 @@ const CanvasViewer: React.FC = () => {
         </div>
       )}
 
-      {/* WebGL Canvas */}
+      {/* WebGL Canvas Wrapper */}
       <TargetOverlay />
-      <canvas
-        ref={canvasRef}
-        className="object-contain shadow-2xl shadow-black/50 transition-shadow duration-300"
+      <div
+        className="relative shadow-2xl shadow-black/50 transition-shadow duration-300 w-fit h-fit"
         style={{
           display: originalUrl ? "block" : "none",
           transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom}) rotate(${rotation}deg)`,
           transition: isDragging
             ? "none"
             : "transform 0.2s cubic-bezier(0.2, 0, 0, 1)",
-          imageRendering: zoom > 1.0 ? "pixelated" : "auto",
           cursor: isPickerActive
             ? "crosshair"
             : isDragging
@@ -412,7 +418,103 @@ const CanvasViewer: React.FC = () => {
         }}
         onDoubleClick={resetZoom}
         onClick={handleCanvasClick}
-      />
+      >
+        {compareMode && originalUrl && (
+          <img
+            src={originalUrl}
+            alt="Before"
+            style={{
+              position: "absolute",
+              inset: 0,
+              width: "100%",
+              height: "100%",
+              objectFit: "fill",
+              pointerEvents: "none",
+            }}
+          />
+        )}
+        <canvas
+          ref={canvasRef}
+          className="object-contain"
+          style={{
+            display: "block",
+            imageRendering: zoom > 1.0 ? "pixelated" : "auto",
+            clipPath: compareMode ? `inset(0 ${(1 - comparePos) * 100}% 0 0)` : undefined,
+          }}
+        />
+        {compareMode && (
+          <div
+            style={{
+              position: "absolute",
+              left: `${comparePos * 100}%`,
+              top: 0,
+              bottom: 0,
+              width: "2px",
+              background: "white",
+              cursor: "ew-resize",
+              zIndex: 20,
+              transform: "translateX(-50%)",
+            }}
+            onPointerDown={(e) => {
+              e.stopPropagation();
+              e.currentTarget.setPointerCapture(e.pointerId);
+            }}
+            onPointerMove={(e) => {
+              if (e.currentTarget.hasPointerCapture(e.pointerId) && canvasRef.current) {
+                const canvasRect = canvasRef.current.getBoundingClientRect();
+                const newPos = (e.clientX - canvasRect.left) / canvasRect.width;
+                setComparePos(Math.max(0.05, Math.min(0.95, newPos)));
+              }
+            }}
+            onPointerUp={(e) => {
+              e.currentTarget.releasePointerCapture(e.pointerId);
+            }}
+          >
+            <div
+              className="flex items-center justify-center text-gray-800"
+              style={{
+                position: "absolute",
+                top: "50%",
+                left: "50%",
+                transform: `translate(-50%, -50%) scale(${1 / zoom})`,
+                width: "32px",
+                height: "32px",
+                borderRadius: "9999px",
+                background: "white",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.4)",
+              }}
+            >
+              <SplitSquareHorizontal size={16} />
+            </div>
+            <div
+              style={{
+                position: "absolute",
+                bottom: "16px",
+                right: "8px",
+                transform: `scale(${1 / zoom})`,
+                transformOrigin: "bottom right",
+                pointerEvents: "none",
+              }}
+              className="text-[10px] font-bold text-white bg-black/40 rounded px-1.5 py-0.5"
+            >
+              Before
+            </div>
+            <div
+              style={{
+                position: "absolute",
+                bottom: "16px",
+                left: "8px",
+                transform: `scale(${1 / zoom})`,
+                transformOrigin: "bottom left",
+                pointerEvents: "none",
+              }}
+              className="text-[10px] font-bold text-white bg-black/40 rounded px-1.5 py-0.5"
+            >
+              After
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Viewer HUD */}
       {originalUrl && (
@@ -480,6 +582,13 @@ const CanvasViewer: React.FC = () => {
             )}
           </div>
           <div className="absolute bottom-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity z-20">
+            <button
+              onClick={() => setCompareMode(!compareMode)}
+              className={`p-2 rounded-lg safari-blur transition-all border border-[var(--border)] mr-2 ${compareMode ? "bg-[var(--bg-control)] text-[var(--theme-primary)]" : "bg-[var(--bg-panel)]/20 hover:bg-[var(--bg-panel)]/20 text-[var(--text-secondary)] hover:text-[var(--text-primary)]"}`}
+              title="Compare before/after"
+            >
+              <SplitSquareHorizontal size={18} />
+            </button>
             <button
               onClick={() => setRotation((r) => (r - 90 + 360) % 360)}
               className="p-2 bg-[var(--bg-panel)]/20 hover:bg-[var(--bg-panel)]/20 rounded-lg safari-blur text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all border border-[var(--border)]"
