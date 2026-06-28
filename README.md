@@ -2,51 +2,6 @@
 
 Chromagrade is a simple yet performant, web-based color grading and photo editing application. Built entirely with modern web technologies and powered by WebGL, it brings desktop-level color grading tools directly to your browser without sacrificing performance or capability.
 
-<br>
-
-<details>
-<summary><b>Learn More</b></summary>
-
-## 1. The Problem We Solve
-
-**Target Audience:**
-Students, photographers, videographers, content creators, and digital artists who need rapid, professional-grade color correction and grading without the steep learning curve, heavy hardware requirements, or subscription costs of traditional desktop software (like DaVinci Resolve or Adobe Lightroom/Classic).
-
-**The Problem:**
-Professional color grading tools like Adobe Lightroom Classic and DaVinci Resolve demand mid-range, high-end hardware and costly subscriptions just to get started. For millions of people on low-spec laptops, especially students, freelancers, and creators in developing regions this creates a hard barrier that excludes them from accessing professional-grade tools entirely.
-
-**Our Impact:**
-Chromagrade tears down both barriers at once. By running entirely in the browser and leveraging WebGL, it delivers real-time professional color grading on virtually any device no installation, no subscriptions, no minimum specs beyond a modern browser.
-
-
-
-## 2. Our Solution
-
-**User Experience (UX):**
-Chromagrade is designed to be instantly intuitive while remaining incredibly powerful. The interface is clean, distraction-free, and organized into logical panels (Basic, Color Wheels, RGB Curves, HSL, LUTs).
-- **Delightful Interactions:** Features like dynamic, color-shifting track gradients on sliders, real-time interactive histogram feedback, and instant A/B before/after visual comparisons make the grading process highly interactive and "fun" to explore.
-- **Seamless Workflow:** The history system (undo/redo) is meticulously optimized to group slider drags, ensuring you never lose your place, and preset management makes jumping between styles effortless.
-
-**Value Proposition:**
-Chromagrade delivers measurable results by drastically reducing the time it takes to achieve a cinematic look.
-- **Zero Install:** Instant access from any web browser.
-- **Real-Time Performance:** Custom WebGL shaders process hi-res images with minimal lag.
-- **Professional Tools:** Support for standard `.cube` LUTs, 3-way color wheels (Shadows, Midtones, Highlights), precise HSL color targeting, and parametric RGB tone curves.
-- **Portability:** Export and import your entire grading workspace or bundle your custom preset collections to share with teams or clients.
-
-
-
-## 3. Uniqueness & Innovation
-
-**Originality:**
-Unlike basic web photo editors that just apply simple CSS filters, Chromagrade implements close mathematical color science (Log-space grading, precise luminance preservation, advanced spline curve interpolation) directly via custom GLSL shaders. I built my own `CanvasEngine` from the ground up to ensure absolute color accuracy and extreme performance. I didn't use a standard photo editor template; I built a simple color grading suite natively for the web.
-
-**The "Wow" Factor:**
-Chromagrade goes beyond manual adjustments by integrating an algorithmic **Color Transfer (Match Color)** engine. With just one click, users can extract the exact color palette, tone curve, and atmospheric grading from a reference image and dynamically match their target image to it. This workflow allows users to instantly "close to" the visual of their favorite cinematic stills or photographs, achieving complex, beautiful grades in milliseconds rather than hours.
-
-</details>
-
-
 ### Notes
 Features that is in development may have bugs, weird behavior, innacurate, etc.
  - **In Research & Development**: Histogram, AutoHDR & SDRr, AutoWB(White Balance), Exposure, Vibrance
